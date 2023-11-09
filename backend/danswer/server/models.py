@@ -202,6 +202,7 @@ class QuestionRequest(BaseModel):
     enable_auto_detect_filters: bool
     favor_recent: bool | None = None
     search_type: SearchType = SearchType.HYBRID
+    skip_rerank: bool = False
 
 
 class QAFeedbackRequest(BaseModel):

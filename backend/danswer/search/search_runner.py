@@ -62,6 +62,7 @@ def query_processing(
     return query
 
 
+@log_function_time()
 def embed_query(
     query: str,
     embedding_model: SentenceTransformer | None = None,
@@ -369,6 +370,7 @@ def danswer_search(
         search_type=question.search_type,
         filters=final_filters,
         favor_recent=True if question.favor_recent is None else question.favor_recent,
+        skip_rerank=question.skip_rerank,
     )
 
     ranked_chunks, unranked_chunks = search_chunks(

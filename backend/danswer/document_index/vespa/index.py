@@ -58,6 +58,7 @@ from danswer.search.search_runner import query_processing
 from danswer.search.search_runner import remove_stop_words
 from danswer.utils.batching import batch_generator
 from danswer.utils.logger import setup_logger
+from danswer.utils.timing import log_function_time
 
 logger = setup_logger()
 
@@ -298,6 +299,8 @@ def _index_vespa_chunks(
 
 
 def _build_vespa_filters(filters: IndexFilters, include_hidden: bool = False) -> str:
+    return ""
+
     def _build_or_filters(key: str, vals: list[str] | None) -> str:
         if vals is None:
             return ""
@@ -415,7 +418,7 @@ def _vespa_hit_to_inference_chunk(hit: dict[str, Any]) -> InferenceChunk:
 
     return InferenceChunk(
         chunk_id=fields[CHUNK_ID],
-        blurb=fields[BLURB],
+        blurb=fields.get(BLURB, ""),
         content=fields[CONTENT],
         source_links=source_links_dict,
         section_continuation=fields[SECTION_CONTINUATION],
@@ -432,13 +435,27 @@ def _vespa_hit_to_inference_chunk(hit: dict[str, Any]) -> InferenceChunk:
     )
 
 
+@log_function_time()
 def _query_vespa(query_params: Mapping[str, str | int]) -> list[InferenceChunk]:
     if "query" in query_params and not cast(str, query_params["query"]).strip():
         raise ValueError("No/empty query received")
-    response = requests.get(SEARCH_ENDPOINT, params=query_params)
+
+    logger.info("Making query with params: %s", query_params)
+    response = requests.get(
+        SEARCH_ENDPOINT,
+        params=dict(
+            **query_params,
+            **{
+                "presentation.timing": True,
+            },
+        ),
+    )
     response.raise_for_status()
 
-    hits = response.json()["root"].get("children", [])
+    response_json = response.json()
+    logger.debug("Response: %s", response_json)
+    logger.info("timing info: %s", response_json.get("timing"))
+    hits = response_json["root"].get("children", [])
 
     for hit in hits:
         if hit["fields"].get(CONTENT) is None:
@@ -450,7 +467,6 @@ def _query_vespa(query_params: Mapping[str, str | int]) -> list[InferenceChunk]:
             )
 
     filtered_hits = [hit for hit in hits if hit["fields"].get(CONTENT) is not None]
-
     inference_chunks = [_vespa_hit_to_inference_chunk(hit) for hit in filtered_hits]
     return inference_chunks
 
@@ -470,7 +486,7 @@ class VespaIndex(DocumentIndex):
         f"{BOOST}, "
         f"{HIDDEN}, "
         f"{DOC_UPDATED_AT}, "
-        f"{METADATA}, "
+        f"{METADATA} "
         f"{CONTENT_SUMMARY} "
         f"from {DOCUMENT_INDEX_NAME} where "
     )
@@ -620,6 +636,7 @@ class VespaIndex(DocumentIndex):
             "hits": num_to_retrieve,
             "offset": 0,
             "ranking.profile": "keyword_search",
+            "timeout": "10s",
         }
 
         return _query_vespa(params)
@@ -659,6 +676,7 @@ class VespaIndex(DocumentIndex):
             "hits": num_to_retrieve,
             "offset": 0,
             "ranking.profile": "semantic_search",
+            "timeout": "10s",
         }
 
         return _query_vespa(params)
@@ -698,6 +716,7 @@ class VespaIndex(DocumentIndex):
             "hits": num_to_retrieve,
             "offset": 0,
             "ranking.profile": "hybrid_search",
+            "timeout": "10s",
         }
 
         return _query_vespa(params)
