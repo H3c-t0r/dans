@@ -55,7 +55,7 @@ export function Header({ user, settings }: HeaderProps) {
   }, [dropdownOpen]);
 
   return (
-    <header className="border-b border-border bg-background-emphasis">
+    <header className="border-b border-border bg-background-emphasis sticky top-0 z-50">
       <div className="mx-8 flex h-16">
         <Link
           className="py-4"
@@ -64,11 +64,16 @@ export function Header({ user, settings }: HeaderProps) {
           }
         >
           <div className="flex">
-            <div className="h-[32px] w-[30px]">
-              <Image src="/logo.png" alt="Logo" width="1419" height="1520" />
-            </div>
+            <Image
+              className="mr-2"
+              alt="ginetta logo"
+              decoding="async"
+              width={32}
+              height={32}
+              src="/logo.png"
+            />
             <h1 className="flex text-2xl text-strong font-bold my-auto">
-              Danswer
+              Ask Ginetta
             </h1>
           </div>
         </Link>
@@ -93,6 +98,15 @@ export function Header({ user, settings }: HeaderProps) {
                 <div className="mx-auto flex text-strong px-2">
                   <FiMessageSquare className="my-auto mr-1" />
                   <h1 className="flex text-sm font-bold my-auto">Chat</h1>
+                </div>
+              </div>
+            </Link>
+
+            <Link href="/rsc" className="h-full flex flex-col hover:bg-hover">
+              <div className="w-24 flex my-auto">
+                <div className="mx-auto flex text-strong px-2">
+                  <FiMessageSquare className="my-auto mr-1" />
+                  <h1 className="flex text-sm font-bold my-auto">RSC</h1>
                 </div>
               </div>
             </Link>
@@ -136,7 +150,3 @@ export function Header({ user, settings }: HeaderProps) {
     </header>
   );
 }
-
-/* 
-
-*/
