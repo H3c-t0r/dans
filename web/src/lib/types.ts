@@ -39,7 +39,8 @@ export type ValidSources =
   | "loopio"
   | "sharepoint"
   | "zendesk"
-  | "axero";
+  | "axero"
+  | "freshdesk";
 
 export type ValidInputTypes = "load_state" | "poll" | "event";
 export type ValidStatuses =
@@ -172,6 +173,12 @@ export interface GoogleSitesConfig {
 }
 
 export interface ZendeskConfig {}
+
+export interface FreshdeskConfig {
+  api_key: string;
+  domain: string;
+  password: string;
+}
 
 export interface IndexAttemptSnapshot {
   id: number;
@@ -340,6 +347,12 @@ export interface SharepointCredentialJson {
 export interface AxeroCredentialJson {
   base_url: string;
   axero_api_token: string;
+}
+
+export interface FreshdeskCredentialJson {
+  freshdesk_api_key: string;
+  freshdesk_domain: string;
+  freshdesk_password: string;
 }
 
 // DELETION
