@@ -9,6 +9,7 @@ from danswer.configs.chat_configs import STOP_STREAM_PAT
 from danswer.llm.answering.models import StreamProcessor
 from danswer.llm.answering.stream_processing.utils import map_document_id_order
 from danswer.prompts.constants import TRIPLE_BACKTICK
+from danswer.tools.message import ChunkWithCount
 from danswer.utils.logger import setup_logger
 
 
@@ -32,6 +33,8 @@ def extract_citations_from_stream(
     prepend_bracket = False
     cited_inds = set()
     hold = ""
+    token_count = 0
+
     for raw_token in tokens:
         if stop_stream:
             next_hold = hold + raw_token
@@ -54,8 +57,17 @@ def extract_citations_from_stream(
             curr_segment += "[" + curr_segment
             prepend_bracket = False
 
-        curr_segment += token
-        llm_out += token
+        if isinstance(token, str):
+            curr_segment += token
+            llm_out += token
+
+        # Counting tokens (counted in `raw_output_for_explicit_tool_calling_llms`)
+        elif isinstance(token, ChunkWithCount):
+            content = token.content
+
+            curr_segment += content
+            llm_out += content
+            token_count += token.tokens
 
         possible_citation_pattern = r"(\[\d*$)"  # [1, [, etc
         possible_citation_found = re.search(possible_citation_pattern, curr_segment)
@@ -66,9 +78,8 @@ def extract_citations_from_stream(
         if citation_found and not in_code_block(llm_out):
             numerical_value = int(citation_found.group(1))
             if 1 <= numerical_value <= max_citation_num:
-                context_llm_doc = context_docs[
-                    numerical_value - 1
-                ]  # remove 1 index offset
+                context_llm_doc = context_docs[numerical_value - 1]
+                #  remove 1 index offset
 
                 link = context_llm_doc.link
                 target_citation_num = doc_id_to_rank_map[context_llm_doc.document_id]
@@ -103,14 +114,16 @@ def extract_citations_from_stream(
             curr_segment = curr_segment[:-1]
             prepend_bracket = True
 
-        yield DanswerAnswerPiece(answer_piece=curr_segment)
+        yield DanswerAnswerPiece(answer_piece=curr_segment, token_count=token_count)
         curr_segment = ""
 
     if curr_segment:
         if prepend_bracket:
-            yield DanswerAnswerPiece(answer_piece="[" + curr_segment)
+            yield DanswerAnswerPiece(
+                answer_piece="[" + curr_segment, token_count=token_count
+            )
         else:
-            yield DanswerAnswerPiece(answer_piece=curr_segment)
+            yield DanswerAnswerPiece(answer_piece=curr_segment, token_count=token_count)
 
 
 def build_citation_processor(

@@ -262,6 +262,7 @@ def stream_chat_message_objects(
                 db_session=db_session,
                 commit=False,
             )
+
             # re-create linear history of messages
             final_msg, history_msgs = create_chat_chain(
                 chat_session_id=chat_session_id, db_session=db_session
@@ -460,6 +461,8 @@ def stream_chat_message_objects(
         reference_db_search_docs = None
         qa_docs_response = None
         ai_message_files = None  # any files to associate with the AI message e.g. dall-e generated images
+
+        # this won't work- need to address with the `llm` and accesss the raw output
         for packet in answer.processed_streamed_output:
             if isinstance(packet, ToolResponse):
                 if packet.id == SEARCH_RESPONSE_SUMMARY_ID:

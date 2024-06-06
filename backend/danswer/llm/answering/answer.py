@@ -40,6 +40,7 @@ from danswer.tools.images.image_generation_tool import ImageGenerationResponse
 from danswer.tools.images.image_generation_tool import ImageGenerationTool
 from danswer.tools.images.prompt import build_image_generation_user_prompt
 from danswer.tools.message import build_tool_message
+from danswer.tools.message import ChunkWithCount
 from danswer.tools.message import ToolCallSummary
 from danswer.tools.search.search_tool import FINAL_CONTEXT_DOCUMENTS
 from danswer.tools.search.search_tool import SEARCH_RESPONSE_SUMMARY_ID
@@ -124,9 +125,9 @@ class Answer:
         self._final_prompt: list[BaseMessage] | None = None
 
         self._streamed_output: list[str] | None = None
-        self._processed_stream: list[
-            AnswerQuestionPossibleReturn | ToolResponse | ToolRunKickoff
-        ] | None = None
+        self._processed_stream: (
+            list[AnswerQuestionPossibleReturn | ToolResponse | ToolRunKickoff] | None
+        ) = None
 
     def _update_prompt_builder_for_search_tool(
         self, prompt_builder: AnswerPromptBuilder, final_context_documents: list[LlmDoc]
@@ -160,7 +161,7 @@ class Answer:
 
     def _raw_output_for_explicit_tool_calling_llms(
         self,
-    ) -> Iterator[str | ToolRunKickoff | ToolResponse]:
+    ) -> Iterator[str | ToolRunKickoff | ToolResponse | ChunkWithCount]:
         prompt_builder = AnswerPromptBuilder(self.message_history, self.llm.config)
 
         tool_call_chunk: AIMessageChunk | None = None
@@ -195,6 +196,7 @@ class Answer:
                     self.tools, self.force_use_tool
                 )
             ]
+
             for message in self.llm.stream(
                 prompt=prompt,
                 tools=final_tool_definitions if final_tool_definitions else None,
@@ -209,7 +211,29 @@ class Answer:
                         tool_call_chunk += message  # type: ignore
                 else:
                     if message.content:
-                        yield cast(str, message.content)
+                        # For langchain v0.2:
+                        # if (
+                        #     hasattr(message, "usage_metadata")
+                        #     and "output_tokens" in message.usage_metadata
+                        # ):
+                        #     yield ChunkWithCount(
+                        #         content=cast(str, message.content),
+                        #         tokens=message.usage_metadata["output_tokens"],
+                        #     )
+
+                        keyword_arguments = message.additional_kwargs
+                        if (
+                            "usage_metadata" in keyword_arguments
+                            and "output_tokens" in keyword_arguments["usage_metadata"]
+                        ):
+                            yield ChunkWithCount(
+                                content=str(message.content),
+                                tokens=keyword_arguments["usage_metadata"][
+                                    "output_tokens"
+                                ],  # Access output_tokens correctly
+                            )
+                        else:
+                            yield cast(str, message.content)
 
             if not tool_call_chunk:
                 return  # no tool call needed
@@ -374,7 +398,7 @@ class Answer:
         )
 
         def _process_stream(
-            stream: Iterator[ToolRunKickoff | ToolResponse | str],
+            stream: Iterator[ToolRunKickoff | ToolResponse | str | ChunkWithCount],
         ) -> AnswerStream:
             message = None
 

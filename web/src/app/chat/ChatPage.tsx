@@ -49,7 +49,7 @@ import { DanswerInitializingLoader } from "@/components/DanswerInitializingLoade
 import { FeedbackModal } from "./modal/FeedbackModal";
 import { ShareChatSessionModal } from "./modal/ShareChatSessionModal";
 import { ChatPersonaSelector } from "./ChatPersonaSelector";
-import { FiShare2 } from "react-icons/fi";
+import { FiActivity, FiShare2 } from "react-icons/fi";
 import { ChatIntro } from "./ChatIntro";
 import { AIMessage, HumanMessage } from "./message/Messages";
 import { ThreeDots } from "react-loader-spinner";
@@ -65,6 +65,7 @@ import { useChatContext } from "@/components/context/ChatContext";
 import { UserDropdown } from "@/components/UserDropdown";
 import { v4 as uuidv4 } from "uuid";
 import { orderAssistantsForUser } from "@/lib/assistants/orderAssistants";
+import { EmphasizedClickable } from "@/components/BasicClickable";
 
 const MAX_INPUT_HEIGHT = 200;
 const TEMP_USER_MESSAGE_ID = -1;
@@ -92,6 +93,15 @@ export function ChatPage({
     openedFolders,
   } = useChatContext();
   const filteredAssistants = orderAssistantsForUser(availablePersonas, user);
+
+  const [canContinue, setCanContinue] = useState(false);
+
+  const continueGenerating = () => {
+    onSubmit({
+      messageOverride:
+        "Continue Generating (pick up exactly where you left off but for code blocks and the like let's try and have it make sense to return on its own place)",
+    });
+  };
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -332,10 +342,10 @@ export function ChatPage({
           (persona) => persona.id === existingChatSessionPersonaId
         )
       : defaultSelectedPersonaId !== undefined
-      ? filteredAssistants.find(
-          (persona) => persona.id === defaultSelectedPersonaId
-        )
-      : undefined
+        ? filteredAssistants.find(
+            (persona) => persona.id === defaultSelectedPersonaId
+          )
+        : undefined
   );
   const livePersona =
     selectedPersona || filteredAssistants[0] || availablePersonas[0];
@@ -475,6 +485,7 @@ export function ChatPage({
     forceSearch?: boolean;
     isSeededChat?: boolean;
   } = {}) => {
+    setCanContinue(false);
     let currChatSessionId: number;
     let isNewSession = chatSessionId === null;
     const searchParamBasedChatSessionName =
@@ -606,6 +617,12 @@ export function ChatPage({
         useExistingUserMessage: isSeededChat,
       })) {
         for (const packet of packetBunch) {
+          if (Object.hasOwn(packet, "max_token")) {
+            if ((packet as AnswerPiecePacket).max_token) {
+              setCanContinue(true);
+            }
+          }
+
           if (Object.hasOwn(packet, "answer_piece")) {
             answer += (packet as AnswerPiecePacket).answer_piece;
           } else if (Object.hasOwn(packet, "top_documents")) {
@@ -614,7 +631,7 @@ export function ChatPage({
             retrievalType = RetrievalType.Search;
             if (documents && documents.length > 0) {
               // point to the latest message (we don't know the messageId yet, which is why
-              // we have to use -1)
+              // we have to use the -1)
               setSelectedMessageForDocDisplay(TEMP_USER_MESSAGE_ID);
             }
           } else if (Object.hasOwn(packet, "file_ids")) {
@@ -1155,8 +1172,22 @@ export function ChatPage({
                               />
                             </div>
                           )}
+                        {!isStreaming && canContinue && (
+                          <div className="mx-auto w-searchbar-xs 2xl:w-searchbar-sm 3xl:w-searchbar relative">
+                            <div className="flex justify-end  w-message-xs 2xl:w-message-sm 3xl:w-message-default break-words ml-8">
+                              <EmphasizedClickable
+                                onClick={() => continueGenerating()}
+                              >
+                                <div className="px-1 flex gap-x-1 text-xs">
+                                  Continue Generating
+                                  <FiActivity className="my-auto" />
+                                </div>
+                              </EmphasizedClickable>
+                            </div>
+                          </div>
+                        )}
 
-                        {/* Some padding at the bottom so the search bar has space at the bottom to not cover the last message*/}
+                        {/* Some padding at the bottom so the search bar can have space at the bottom to not cover the last message*/}
                         <div className={`min-h-[100px] w-full`}></div>
 
                         {livePersona &&
@@ -1197,7 +1228,6 @@ export function ChatPage({
                               )}
                             </div>
                           )}
-
                         <div ref={endDivRef} />
                       </div>
                     </div>
