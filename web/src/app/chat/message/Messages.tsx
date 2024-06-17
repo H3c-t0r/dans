@@ -9,6 +9,8 @@ import {
   FiEdit2,
   FiChevronRight,
   FiChevronLeft,
+  FiDatabase,
+  FiStar,
 } from "react-icons/fi";
 import { FeedbackType } from "../types";
 import { useEffect, useRef, useState } from "react";
@@ -20,7 +22,7 @@ import { ThreeDots } from "react-loader-spinner";
 import { SkippedSearch } from "./SkippedSearch";
 import remarkGfm from "remark-gfm";
 import { CopyButton } from "@/components/CopyButton";
-import { ChatFileType, FileDescriptor } from "../interfaces";
+import { ChatFileType, FileDescriptor, Message } from "../interfaces";
 import { IMAGE_GENERATION_TOOL_NAME } from "../tools/constants";
 import { ToolRunningAnimation } from "../tools/ToolRunningAnimation";
 import { Hoverable } from "@/components/Hoverable";
@@ -34,6 +36,10 @@ import Prism from "prismjs";
 
 import "prismjs/themes/prism-tomorrow.css";
 import "./custom-code-styles.css";
+import { Button } from "@tremor/react";
+import RegenerateOption from "../RegenerateOptions";
+import { Persona } from "@/app/admin/assistants/interfaces";
+import { LlmOverride } from "@/lib/hooks";
 
 function FileDisplay({ files }: { files: FileDescriptor[] }) {
   const imageFiles = files.filter((file) => file.type === ChatFileType.IMAGE);
@@ -71,27 +77,34 @@ function FileDisplay({ files }: { files: FileDescriptor[] }) {
 }
 
 export const AIMessage = ({
+  regenerate,
+  alternateModel,
   messageId,
   content,
   files,
   query,
-  personaName,
+  persona,
   citedDocuments,
   currentTool,
   isComplete,
   hasDocs,
+  otherResponseCanSwitchTo = [],
   handleFeedback,
   isCurrentlyShowingRetrieved,
   handleShowRetrieved,
   handleSearchQueryEdit,
   handleForceSearch,
   retrievalDisabled,
+  onResponseSelection,
 }: {
+  alternateModel?: string;
+  regenerate?: (modelOverRide: LlmOverride) => Promise<void>;
+  otherResponseCanSwitchTo?: number[];
   messageId: number | null;
   content: string | JSX.Element;
   files?: FileDescriptor[];
   query?: string;
-  personaName?: string;
+  persona?: Persona;
   citedDocuments?: [string, DanswerDocument][] | null;
   currentTool?: string | null;
   isComplete?: boolean;
@@ -102,6 +115,7 @@ export const AIMessage = ({
   handleSearchQueryEdit?: (query: string) => void;
   handleForceSearch?: () => void;
   retrievalDisabled?: boolean;
+  onResponseSelection?: (messageId: number) => void;
 }) => {
   const [isReady, setIsReady] = useState(false);
   useEffect(() => {
@@ -113,6 +127,11 @@ export const AIMessage = ({
   if (!isReady) {
     return <div />;
   }
+
+  // Get response index
+  const currentResponseId = messageId
+    ? otherResponseCanSwitchTo?.indexOf(messageId)
+    : undefined;
 
   if (!isComplete) {
     const trimIncompleteCodeSection = (
@@ -157,10 +176,10 @@ export const AIMessage = ({
     );
 
   return (
-    <div className={"py-5 px-5 flex -mr-6 w-full"}>
-      <div className="mx-auto w-searchbar-xs 2xl:w-searchbar-sm 3xl:w-searchbar relative">
+    <div className={"py-5  px-5 flex -mr-6 w-full"}>
+      <div className="mx-auto  w-searchbar-xs 2xl:w-searchbar-sm 3xl:w-searchbar relative">
         <div className="ml-8">
-          <div className="flex">
+          <div className="  flex">
             <div className="p-1 bg-ai rounded-lg h-fit my-auto">
               <div className="text-inverted">
                 <FiCpu size={16} className="my-auto mx-auto" />
@@ -168,7 +187,7 @@ export const AIMessage = ({
             </div>
 
             <div className="font-bold text-emphasis ml-2 my-auto">
-              {personaName || "Danswer"}
+              {persona ? persona.name : "Danswer"}
             </div>
 
             {query === undefined &&
@@ -238,9 +257,6 @@ export const AIMessage = ({
                                 : undefined
                             }
                             className="cursor-pointer text-link hover:text-link-hover"
-                            // href={rest.href}
-                            // target="_blank"
-                            // rel="noopener noreferrer"
                           >
                             {rest.children}
                           </a>
@@ -306,8 +322,29 @@ export const AIMessage = ({
               </div>
             )}
           </div>
+
           {handleFeedback && (
             <div className="flex flex-col md:flex-row gap-x-0.5 ml-8 mt-1.5">
+              {currentResponseId !== undefined &&
+                onResponseSelection &&
+                otherResponseCanSwitchTo.length > 1 && (
+                  <div className="mr-2">
+                    <MessageSwitcher
+                      currentPage={currentResponseId + 1}
+                      totalPages={otherResponseCanSwitchTo.length}
+                      handlePrevious={() =>
+                        onResponseSelection(
+                          otherResponseCanSwitchTo[currentResponseId - 1]
+                        )
+                      }
+                      handleNext={() =>
+                        onResponseSelection(
+                          otherResponseCanSwitchTo[currentResponseId + 1]
+                        )
+                      }
+                    />
+                  </div>
+                )}
               <CopyButton content={content.toString()} />
               <Hoverable
                 icon={FiThumbsUp}
@@ -317,6 +354,14 @@ export const AIMessage = ({
                 icon={FiThumbsDown}
                 onClick={() => handleFeedback("dislike")}
               />
+
+              {regenerate && (
+                <RegenerateOption
+                  selectedAssistant={persona!}
+                  regenerate={regenerate}
+                  alternateModel={alternateModel}
+                />
+              )}
             </div>
           )}
         </div>
@@ -421,7 +466,6 @@ export const HumanMessage = ({
           <div className="mx-auto mt-1 ml-8 w-searchbar-xs 2xl:w-searchbar-sm 3xl:w-searchbar-default flex flex-wrap">
             <div className="w-message-xs 2xl:w-message-sm 3xl:w-message-default break-words">
               <FileDisplay files={files || []} />
-
               {isEditing ? (
                 <div>
                   <div

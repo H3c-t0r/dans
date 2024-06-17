@@ -233,6 +233,7 @@ def stream_chat_message_objects(
                 llm_override=new_msg_req.llm_override or chat_session.llm_override,
                 additional_headers=litellm_additional_headers,
             )
+
         except GenAIDisabledException:
             raise RuntimeError("LLM is disabled. Can't use chat flow without LLM.")
 
@@ -261,7 +262,16 @@ def stream_chat_message_objects(
             parent_message = root_message
 
         user_message = None
-        if not use_existing_user_message:
+
+        if new_msg_req.regenerate:
+            final_msg, history_msgs = create_chat_chain(
+                parent_id=parent_id,
+                chat_session_id=chat_session_id,
+                db_session=db_session,
+                regenerating=True,
+            )
+
+        elif not use_existing_user_message:
             # Create new message at the right place in the tree and update the parent's child pointer
             # Don't commit yet until we verify the chat message chain
             user_message = create_new_chat_message(
@@ -288,11 +298,13 @@ def stream_chat_message_objects(
 
             # NOTE: do not commit user message - it will be committed when the
             # assistant message is successfully generated
+
         else:
             # re-create linear history of messages
             final_msg, history_msgs = create_chat_chain(
                 chat_session_id=chat_session_id, db_session=db_session
             )
+
             if final_msg.message_type != MessageType.USER:
                 raise RuntimeError(
                     "The last message was not a user message. Cannot call "
@@ -363,12 +375,18 @@ def stream_chat_message_objects(
                 or new_msg_req.chunks_below > 0,
             )
 
+        # when overriding model, ensure that the alternate model is known
+        alternate_model = (
+            new_msg_req.llm_override.model_version if new_msg_req.llm_override else None
+        )
+
         # Cannot determine these without the LLM step or breaking out early
         partial_response = partial(
             create_new_chat_message,
             chat_session_id=chat_session_id,
             parent_message=final_msg,
             prompt_id=prompt_id,
+            alternate_model=alternate_model,
             # message=,
             # rephrased_query=,
             # token_count=,
