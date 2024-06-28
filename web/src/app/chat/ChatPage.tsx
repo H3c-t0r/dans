@@ -1385,7 +1385,7 @@ export function ChatPage({
                           )}
 
                         {/* Some padding at the bottom so the search bar has space at the bottom to not cover the last message*/}
-                        <div ref={endPaddingRef} className=" h-[95px]" />
+                        <div ref={endPaddingRef} className="h-[95px]" />
                         <div ref={endDivRef}></div>
 
                         {livePersona &&
@@ -1398,9 +1398,7 @@ export function ChatPage({
                               className={`
                               mx-auto 
                               px-4 
-                              w-searchbar-xs 
-                              2xl:w-searchbar-sm 
-                              3xl:w-searchbar 
+                              max-w-searchbar-max
                               grid 
                               gap-4 
                               grid-cols-1 
