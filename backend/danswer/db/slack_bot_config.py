@@ -58,6 +58,7 @@ def create_slack_bot_persona(
         name=persona_name,
         description="",
         num_chunks=num_chunks,
+        num_days=None,
         llm_relevance_filter=True,
         llm_filter_extraction=True,
         recency_bias=RecencyBiasSetting.AUTO,

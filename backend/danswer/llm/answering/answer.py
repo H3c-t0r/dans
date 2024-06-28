@@ -249,6 +249,7 @@ class Answer:
 
             if tool.name() == SearchTool.NAME:
                 self._update_prompt_builder_for_search_tool(prompt_builder, [])
+
             elif tool.name() == ImageGenerationTool.NAME:
                 prompt_builder.update_user_prompt(
                     build_image_generation_user_prompt(

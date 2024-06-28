@@ -82,6 +82,7 @@ def create_update_persona(
             name=create_persona_request.name,
             description=create_persona_request.description,
             num_chunks=create_persona_request.num_chunks,
+            num_days=create_persona_request.num_days,
             llm_relevance_filter=create_persona_request.llm_relevance_filter,
             llm_filter_extraction=create_persona_request.llm_filter_extraction,
             recency_bias=create_persona_request.recency_bias,
@@ -327,6 +328,7 @@ def upsert_persona(
     name: str,
     description: str,
     num_chunks: float,
+    num_days: float | None,
     llm_relevance_filter: bool,
     llm_filter_extraction: bool,
     recency_bias: RecencyBiasSetting,
@@ -365,6 +367,7 @@ def upsert_persona(
         persona.name = name
         persona.description = description
         persona.num_chunks = num_chunks
+        persona.num_days = num_days
         persona.llm_relevance_filter = llm_relevance_filter
         persona.llm_filter_extraction = llm_filter_extraction
         persona.recency_bias = recency_bias
@@ -396,6 +399,7 @@ def upsert_persona(
             name=name,
             description=description,
             num_chunks=num_chunks,
+            num_days=num_days,
             llm_relevance_filter=llm_relevance_filter,
             llm_filter_extraction=llm_filter_extraction,
             recency_bias=recency_bias,

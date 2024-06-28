@@ -19,6 +19,7 @@ class CreatePersonaRequest(BaseModel):
     name: str
     description: str
     num_chunks: float
+    num_days: float
     llm_relevance_filter: bool
     is_public: bool
     llm_filter_extraction: bool
@@ -44,6 +45,7 @@ class PersonaSnapshot(BaseModel):
     display_priority: int | None
     description: str
     num_chunks: float | None
+    num_days: float | None
     llm_relevance_filter: bool
     llm_filter_extraction: bool
     llm_model_provider_override: str | None
@@ -80,6 +82,7 @@ class PersonaSnapshot(BaseModel):
             display_priority=persona.display_priority,
             description=persona.description,
             num_chunks=persona.num_chunks,
+            num_days=persona.num_days,
             llm_relevance_filter=persona.llm_relevance_filter,
             llm_filter_extraction=persona.llm_filter_extraction,
             llm_model_provider_override=persona.llm_model_provider_override,
