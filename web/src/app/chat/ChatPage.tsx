@@ -12,7 +12,6 @@ import {
   Message,
   RetrievalType,
   StreamingError,
-  ToolCallFinalResult,
   ToolCallMetadata,
 } from "./interfaces";
 import { ChatSidebar } from "./sessionSidebar/ChatSidebar";
@@ -39,7 +38,7 @@ import {
   uploadFilesForChat,
   useScrollonStream,
 } from "./lib";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePopup } from "@/components/admin/connectors/Popup";
 import { SEARCH_PARAM_NAMES, shouldSubmitOnLoad } from "./searchParams";
 import { useDocumentSelection } from "./useDocumentSelection";
@@ -58,11 +57,9 @@ import { ThreeDots } from "react-loader-spinner";
 import { StarterMessage } from "./StarterMessage";
 import { AnswerPiecePacket, DanswerDocument } from "@/lib/search/interfaces";
 import { buildFilters } from "@/lib/search/utils";
-import { SettingsContext } from "@/components/settings/SettingsProvider";
 import Dropzone from "react-dropzone";
 import {
   checkLLMSupportsImageInput,
-  destructureValue,
   getFinalLLM,
   structureValue,
 } from "@/lib/llm/utils";
@@ -78,9 +75,8 @@ import { TbLayoutSidebarRightExpand } from "react-icons/tb";
 import { SIDEBAR_WIDTH_CONST } from "@/lib/constants";
 
 import ResizableSection from "@/components/resizable/ResizableSection";
-import { Button } from "@tremor/react";
+import MobileHeaderToggle from "@/components/header/MobileHeaderToggle";
 
-const MAX_INPUT_HEIGHT = 200;
 const TEMP_USER_MESSAGE_ID = -1;
 const TEMP_ASSISTANT_MESSAGE_ID = -2;
 const SYSTEM_MESSAGE_ID = -3;
@@ -544,11 +540,17 @@ export function ChatPage({
       // screen sizes. `1700` corresponds to the custom "3xl" tailwind breakpoint
       // NOTE: some buffer is needed to account for scroll bars
       if (document.documentElement.clientWidth > 1700) {
-        setMaxDocumentSidebarWidth(masterFlexboxRef.current.clientWidth - 950);
+        setMaxDocumentSidebarWidth(
+          Math.max(300, masterFlexboxRef.current.clientWidth - 950)
+        );
       } else if (document.documentElement.clientWidth > 1420) {
-        setMaxDocumentSidebarWidth(masterFlexboxRef.current.clientWidth - 760);
+        setMaxDocumentSidebarWidth(
+          Math.max(300, masterFlexboxRef.current.clientWidth - 760)
+        );
       } else {
-        setMaxDocumentSidebarWidth(masterFlexboxRef.current.clientWidth - 660);
+        setMaxDocumentSidebarWidth(
+          Math.max(300, masterFlexboxRef.current.clientWidth - 660)
+        );
       }
     }
   };
@@ -1002,12 +1004,8 @@ export function ChatPage({
   // NOTE: this must be done here, in a client component since
   // settings are passed in via Context and therefore aren't
   // available in server-side components
-  const settings = useContext(SettingsContext);
-  if (settings?.settings?.chat_page_enabled === false) {
-    router.push("/search");
-  }
 
-  const [showDocSidebar, setShowDocSidebar] = useState(true); // State to track if sidebar is open
+  const [showDocSidebar, setShowDocSidebar] = useState(false); // State to track if sidebar is open
 
   const toggleSidebar = () => {
     if (sidebarElementRef.current) {
@@ -1019,6 +1017,12 @@ export function ChatPage({
     }
 
     setShowDocSidebar((showDocSidebar) => !showDocSidebar); // Toggle the state which will in turn toggle the class
+  };
+
+  const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
+
+  const toggleChatSideBar = () => {
+    setIsChatSidebarOpen(!isChatSidebarOpen);
   };
 
   const retrievalDisabled = !personaIncludesRetrieval(livePersona);
@@ -1034,8 +1038,10 @@ export function ChatPage({
       Only used in the EE version of the app. */}
       <ChatPopup />
 
-      <div className="flex relative bg-background text-default overflow-x-hidden">
+      <div className="flex relative bg-background text-default h-full overflow-x-hidden">
         <ChatSidebar
+          isChatSidebarOpen={isChatSidebarOpen}
+          toggleChatSideBar={toggleChatSideBar}
           existingChats={chatSessions}
           currentChatSession={selectedChatSession}
           folders={folders}
@@ -1093,15 +1099,10 @@ export function ChatPage({
               {({ getRootProps }) => (
                 <>
                   <div
-                    className={`w-full sm:relative h-screen ${
-                      retrievalDisabled ? "pb-[111px]" : "pb-[140px]"
-                    }
-                      flex-auto transition-margin duration-300 
-                      overflow-x-auto
-                      `}
+                    className={`h-[calc(100dvh)]  w-full relative flex-auto transition-margin duration-300  overflow-x-auto 
+                  ${retrievalDisabled ? "pb-[111px]" : "pb-[140px]"}`}
                     {...getRootProps()}
                   >
-                    {/* <input {...getInputProps()} /> */}
                     <div
                       className={`w-full h-full flex flex-col overflow-y-auto overflow-x-hidden relative`}
                       ref={scrollableDivRef}
@@ -1111,9 +1112,17 @@ export function ChatPage({
                       <ChatBanner />
 
                       {livePersona && (
-                        <div className="sticky top-0 left-80 z-10 w-full bg-background flex">
-                          <div className="mt-2 flex w-full">
-                            <div className="ml-2 p-1 rounded w-fit">
+                        <div className="sticky top-0 mobile:left-0 mobile:w-[90%] mobile:mx-auto desktop:left-2 z-10 w-full bg-background flex">
+                          <div className="mt-2 desktop:flex mobile:grid mobile:grid-cols-3 w-full">
+                            <div className="mr-auto desktop:hidden">
+                              {!isChatSidebarOpen && (
+                                <MobileHeaderToggle
+                                  toggle={toggleChatSideBar}
+                                />
+                              )}
+                            </div>
+
+                            <div className="mobile:hidden desktop:ml-2 p-1 rounded w-fit">
                               <ChatPersonaSelector
                                 personas={filteredAssistants}
                                 selectedPersonaId={livePersona.id}
@@ -1122,7 +1131,14 @@ export function ChatPage({
                               />
                             </div>
 
-                            <div className="ml-auto mr-6 flex">
+                            <a
+                              href="/search"
+                              className="desktop:hidden my-auto mobile:mx-auto text-xl text-strong font-bold p-1 rounded w-fit px-2 rounded cursor-pointer hover:bg-hover-light"
+                            >
+                              Danswer
+                            </a>
+
+                            <div className="ml-auto desktop:mr-6 flex">
                               {chatSessionId !== null && (
                                 <div
                                   onClick={() => setSharingModalVisible(true)}
@@ -1166,8 +1182,8 @@ export function ChatPage({
 
                       <div
                         className={
-                          "mt-4 pt-12 sm:pt-0 mx-8" +
-                          (hasPerformedInitialScroll ? "" : " invisible")
+                          "md:mx-8 mt-4 pt-12 sm:pt-0" +
+                          +(hasPerformedInitialScroll ? "" : " invisible")
                         }
                       >
                         {messageHistory.map((message, i) => {
@@ -1398,9 +1414,7 @@ export function ChatPage({
                               className={`
                               mx-auto 
                               px-4 
-                              w-searchbar-xs 
-                              2xl:w-searchbar-sm 
-                              3xl:w-searchbar 
+                              max-w-searchbar-max
                               grid 
                               gap-4 
                               grid-cols-1 
@@ -1437,7 +1451,7 @@ export function ChatPage({
                       ref={inputRef}
                       className="absolute bottom-0 z-10 w-full"
                     >
-                      <div className="w-full relative pb-4">
+                      <div className="w-full relative pb-4 ">
                         {aboveHorizon && (
                           <div className="pointer-events-none w-full bg-transparent flex sticky justify-center">
                             <button

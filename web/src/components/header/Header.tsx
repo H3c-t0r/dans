@@ -3,12 +3,13 @@
 import { User } from "@/lib/types";
 import Link from "next/link";
 import React, { useContext } from "react";
-import { FiMessageSquare, FiSearch } from "react-icons/fi";
+import { FiMenu, FiMessageSquare, FiSearch } from "react-icons/fi";
 import { HeaderWrapper } from "./HeaderWrapper";
 import { SettingsContext } from "../settings/SettingsProvider";
 import { UserDropdown } from "../UserDropdown";
 import { Logo } from "../Logo";
 import { NEXT_PUBLIC_DO_NOT_USE_TOGGLE_OFF_DANSWER_POWERED } from "@/lib/constants";
+import MobileHeaderToggle from "./MobileHeaderToggle";
 
 export function HeaderTitle({ children }: { children: JSX.Element | string }) {
   return <h1 className="flex text-2xl text-strong font-bold">{children}</h1>;
@@ -16,9 +17,11 @@ export function HeaderTitle({ children }: { children: JSX.Element | string }) {
 
 interface HeaderProps {
   user: User | null;
+  toggleSidebar?: () => void;
+  hideToggle?: boolean;
 }
 
-export function Header({ user }: HeaderProps) {
+export function Header({ user, toggleSidebar, hideToggle }: HeaderProps) {
   const combinedSettings = useContext(SettingsContext);
   if (!combinedSettings) {
     return null;
@@ -28,9 +31,14 @@ export function Header({ user }: HeaderProps) {
 
   return (
     <HeaderWrapper>
-      <div className="flex h-full">
+      <div className="mt-2 h-full  desktop:flex mobile:grid mobile:grid-cols-3">
+        <div className="mr-auto my-auto desktop:hidden">
+          {toggleSidebar && !hideToggle && (
+            <MobileHeaderToggle toggle={toggleSidebar} />
+          )}
+        </div>
         <Link
-          className="py-3 flex flex-col"
+          className="py-3 flex flex-col items-center justify-center"
           href={
             settings && settings.default_page === "chat" ? "/chat" : "/search"
           }
@@ -63,7 +71,9 @@ export function Header({ user }: HeaderProps) {
           <>
             <Link
               href="/search"
-              className={"ml-6 h-full flex flex-col hover:bg-hover"}
+              className={
+                "mobile:hidden ml-6 h-full flex flex-col hover:bg-hover"
+              }
             >
               <div className="w-24 flex my-auto">
                 <div className={"mx-auto flex text-strong px-2"}>
@@ -73,7 +83,10 @@ export function Header({ user }: HeaderProps) {
               </div>
             </Link>
 
-            <Link href="/chat" className="h-full flex flex-col hover:bg-hover">
+            <Link
+              href="/chat"
+              className="mobile:hidden h-full flex flex-col hover:bg-hover"
+            >
               <div className="w-24 flex my-auto">
                 <div className="mx-auto flex text-strong px-2">
                   <FiMessageSquare className="my-auto mr-1" />
@@ -84,7 +97,7 @@ export function Header({ user }: HeaderProps) {
           </>
         )}
 
-        <div className="ml-auto h-full flex flex-col">
+        <div className="mobile:hidden  ml-auto h-full flex flex-col">
           <div className="my-auto">
             <UserDropdown user={user} hideChatAndSearch />
           </div>
@@ -93,7 +106,3 @@ export function Header({ user }: HeaderProps) {
     </HeaderWrapper>
   );
 }
-
-/* 
-
-*/

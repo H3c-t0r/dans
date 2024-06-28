@@ -77,16 +77,14 @@ export function ChatInputBar({
 
   return (
     <div>
-      <div className="flex justify-center pb-2 max-w-screen-lg mx-auto mb-2">
+      <div className="flex justify-center pb-2 max-w-screen-md mx-auto mb-2">
         <div
           className="
-            w-full
+            w-[90%]
             shrink
             relative
             px-4
-            w-searchbar-xs
-            2xl:w-searchbar-sm
-            3xl:w-searchbar
+            max-w-searchbar-max
             mx-auto
           "
         >
@@ -140,9 +138,8 @@ export function ChatInputBar({
                 bg-background-weak
                 ${
                   textAreaRef.current &&
-                  textAreaRef.current.scrollHeight > MAX_INPUT_HEIGHT
-                    ? "overflow-y-auto mt-2"
-                    : ""
+                  textAreaRef.current.scrollHeight > MAX_INPUT_HEIGHT &&
+                  "overflow-y-auto mt-2"
                 }
                 overflow-hidden
                 whitespace-normal
