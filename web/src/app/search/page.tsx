@@ -1,3 +1,4 @@
+
 import { SearchSection } from "@/components/search/SearchSection";
 import { Header } from "@/components/header/Header";
 import {
@@ -24,6 +25,13 @@ import { FullEmbeddingModelResponse } from "../admin/models/embedding/embeddingM
 import { NoSourcesModal } from "@/components/initialSetup/search/NoSourcesModal";
 import { NoCompleteSourcesModal } from "@/components/initialSetup/search/NoCompleteSourceModal";
 import { ChatPopup } from "../chat/ChatPopup";
+import FunctionalWrapper from "../chat/shared_chat_search/FunctionalWrapper";
+// import {  useState } from "react";
+import { TbLayoutSidebarLeftExpand } from "react-icons/tb";
+import { useChatContext } from "@/components/context/ChatContext";
+
+import { UserDropdown } from "@/components/UserDropdown";
+import { ChatSession } from "../chat/interfaces";
 
 export default async function Home() {
   // Disable caching so we always get the up to date connector / document set / persona info
@@ -39,7 +47,10 @@ export default async function Home() {
     fetchSS("/persona"),
     fetchSS("/query/valid-tags"),
     fetchSS("/secondary-index/get-embedding-models"),
+    fetchSS("/chat/get-user-searches"),
+    
   ];
+
 
   // catch cases where the backend is completely unreachable here
   // without try / catch, will just raise an exception and the page
@@ -63,6 +74,7 @@ export default async function Home() {
   const personaResponse = results[4] as Response | null;
   const tagsResponse = results[5] as Response | null;
   const embeddingModelResponse = results[6] as Response | null;
+  const queryResponse = results[7] as Response | null;
 
   const authDisabled = authTypeMetadata?.authType === "disabled";
   if (!authDisabled && !user) {
@@ -86,6 +98,15 @@ export default async function Home() {
   } else {
     console.log(
       `Failed to fetch document sets - ${documentSetsResponse?.status}`
+    );
+  }
+
+  let querySessions: ChatSession[] = [];
+  if (queryResponse?.ok) {
+    querySessions = (await queryResponse.json()).sessions;
+  } else {
+    console.log(
+      `Failed to fetch chat sessions - ${queryResponse?.text()}`
     );
   }
 
@@ -125,7 +146,7 @@ export default async function Home() {
     | undefined;
   let searchTypeDefault: SearchType =
     storedSearchType !== undefined &&
-    SearchType.hasOwnProperty(storedSearchType)
+      SearchType.hasOwnProperty(storedSearchType)
       ? (storedSearchType as SearchType)
       : SearchType.SEMANTIC; // default to semantic
 
@@ -147,9 +168,11 @@ export default async function Home() {
     !shouldDisplayNoSourcesModal &&
     !shouldShowWelcomeModal;
 
+
   return (
     <>
-      <Header user={user} />
+      {/* <Header user={user} />
+      <> */}
       <div className="m-3">
         <HealthCheckBanner />
       </div>
@@ -170,18 +193,22 @@ export default async function Home() {
       <ChatPopup />
 
       <InstantSSRAutoRefresh />
-
-      <div className="px-24 pt-10 flex flex-col items-center min-h-screen">
-        <div className="w-full">
-          <SearchSection
-            ccPairs={ccPairs}
-            documentSets={documentSets}
-            personas={personas}
-            tags={tags}
-            defaultSearchType={searchTypeDefault}
-          />
+      <FunctionalWrapper>
+        <div className="relative flex flex-col items-center min-h-screen">
+          <div className="w-full">
+            <SearchSection
+              querySessions={querySessions}
+              user={user}
+              ccPairs={ccPairs}
+              documentSets={documentSets}
+              personas={personas}
+              tags={tags}
+              defaultSearchType={searchTypeDefault}
+            />
+          </div>
         </div>
-      </div>
+      </FunctionalWrapper>
+
     </>
   );
 }

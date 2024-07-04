@@ -2,7 +2,10 @@ from datetime import datetime
 from datetime import timedelta
 from uuid import UUID
 
+from sqlalchemy import and_
 from sqlalchemy import delete
+from sqlalchemy import desc
+from sqlalchemy import func
 from sqlalchemy import nullsfirst
 from sqlalchemy import or_
 from sqlalchemy import select
@@ -32,6 +35,7 @@ from danswer.search.models import SearchDoc as ServerSearchDoc
 from danswer.server.query_and_chat.models import ChatMessageDetail
 from danswer.tools.tool_runner import ToolCallFinalResult
 from danswer.utils.logger import setup_logger
+
 
 logger = setup_logger()
 
@@ -67,16 +71,71 @@ def get_chat_session_by_id(
     return chat_session
 
 
+def get_first_messages_for_chat_sessions(
+    chat_session_ids: list[int], db_session: Session
+) -> list[tuple[int, str]]:
+    subquery = (
+        select(ChatMessage.chat_session_id, func.min(ChatMessage.id).label("min_id"))
+        .where(
+            and_(
+                ChatMessage.chat_session_id.in_(chat_session_ids),
+                ChatMessage.message_type == MessageType.USER,  # Select USER messages
+            )
+        )
+        .group_by(ChatMessage.chat_session_id)
+        .subquery()
+    )
+
+    query = select(ChatMessage.chat_session_id, ChatMessage.message).join(
+        subquery,
+        (ChatMessage.chat_session_id == subquery.c.chat_session_id)
+        & (ChatMessage.id == subquery.c.min_id),
+    )
+
+    first_messages = db_session.execute(query).all()
+    return [(row.chat_session_id, row.message) for row in first_messages]
+
+
+# def get_first_messages_for_chat_sessions(
+#     chat_session_ids: list[int], db_session: Session
+# ) -> Sequence[tuple[int, str]]:
+#     subquery = (
+#         select(ChatMessage.chat_session_id, func.min(ChatMessage.id).label("min_id"))
+#         .where(
+#             and_(
+#                 ChatMessage.chat_session_id.in_(chat_session_ids),
+#                 ChatMessage.message_type == MessageType.USER,  # Select USER messages
+#             )
+#         )
+#         .group_by(ChatMessage.chat_session_id)
+#         .subquery()
+#     )
+
+#     query = select(ChatMessage.chat_session_id, ChatMessage.message).join(
+#         subquery,
+#         (ChatMessage.chat_session_id == subquery.c.chat_session_id)
+#         & (ChatMessage.id == subquery.c.min_id),
+#     )
+
+#     first_messages = db_session.execute(query).all()
+#     return first_messages
+
+
 def get_chat_sessions_by_user(
     user_id: UUID | None,
     deleted: bool | None,
     db_session: Session,
     include_one_shot: bool = False,
+    only_one_shot: bool = False,
 ) -> list[ChatSession]:
     stmt = select(ChatSession).where(ChatSession.user_id == user_id)
 
-    if not include_one_shot:
+    if not include_one_shot and not only_one_shot:
         stmt = stmt.where(ChatSession.one_shot.is_(False))
+
+    if only_one_shot:
+        stmt = stmt.where(ChatSession.one_shot.is_(True))
+        stmt = stmt.order_by(desc(ChatSession.id))
 
     if deleted is not None:
         stmt = stmt.where(ChatSession.deleted == deleted)
@@ -203,6 +262,7 @@ def delete_chat_session(
     db_session.commit()
 
 
+# def get_chat
 def delete_chat_sessions_older_than(days_old: int, db_session: Session) -> None:
     cutoff_time = datetime.utcnow() - timedelta(days=days_old)
     old_sessions = db_session.execute(
@@ -524,9 +584,12 @@ def get_retrieval_docs_from_chat_message(
 
 
 def translate_db_message_to_chat_message_detail(
-    chat_message: ChatMessage, remove_doc_content: bool = False
+    chat_message: ChatMessage,
+    relevance: dict | None = None,
+    remove_doc_content: bool = False,
 ) -> ChatMessageDetail:
     chat_msg_detail = ChatMessageDetail(
+        relevance=relevance,
         message_id=chat_message.id,
         parent_message=chat_message.parent_message,
         latest_child_message=chat_message.latest_child_message,

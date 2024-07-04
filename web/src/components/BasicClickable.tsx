@@ -2,9 +2,11 @@ export function BasicClickable({
   children,
   onClick,
   fullWidth = false,
+  inset,
 }: {
   children: string | JSX.Element;
   onClick?: () => void;
+  inset?: boolean;
   fullWidth?: boolean;
 }) {
   return (
@@ -12,19 +14,24 @@ export function BasicClickable({
       onClick={onClick}
       className={`
         border 
-        border-border 
-        shadow-md
+        border-border
         rounded
         font-medium 
         text-emphasis 
         text-sm
-        p-1
+        relative
+        px-1 py-1.5
         h-full
         bg-background
         select-none
+        overflow-hidden
         hover:bg-hover-light
         ${fullWidth ? "w-full" : ""}`}
     >
+      {inset && (
+        <div className=" rounded absolute inset-0 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3),inset_0_-2px_2px_rgba(255,255,255,0.5)]" />
+      )}
+
       {children}
     </button>
   );
@@ -66,13 +73,13 @@ export function BasicSelectable({
   selected,
   hasBorder,
   fullWidth = false,
-  padding = true,
+  padding = "normal",
 }: {
   children: string | JSX.Element;
   selected: boolean;
   hasBorder?: boolean;
   fullWidth?: boolean;
-  padding?: boolean;
+  padding?: "none" | "normal" | "extra";
 }) {
   return (
     <div
@@ -81,7 +88,8 @@ export function BasicSelectable({
         font-medium 
         text-emphasis 
         text-sm
-        ${padding && "p-1"}
+        ${padding == "normal" && "p-1"}
+        ${padding == "extra" && "p-1.5"}
         select-none
         ${hasBorder ? "border border-border" : ""}
         ${selected ? "bg-hover" : "hover:bg-hover"}

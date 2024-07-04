@@ -41,6 +41,12 @@ import "./custom-code-styles.css";
 import { Persona } from "@/app/admin/assistants/interfaces";
 import { Button } from "@tremor/react";
 import { AssistantIcon } from "@/components/assistants/AssistantIcon";
+import Citation from "@/components/search/results/Citation";
+import {
+  buildDocumentSummaryDisplay,
+  DocumentMetadataBlock,
+} from "@/components/search/DocumentDisplay";
+import { DocSidebar } from "./DocumentSidebar";
 
 const TOOLS_WITH_CUSTOM_HANDLING = [
   SEARCH_TOOL_NAME,
@@ -83,10 +89,13 @@ function FileDisplay({ files }: { files: FileDescriptor[] }) {
 }
 
 export const AIMessage = ({
+  toggleDocumentSelection,
   alternativeAssistant,
+  docs,
   messageId,
   content,
   files,
+  selectedDocuments,
   query,
   personaName,
   citedDocuments,
@@ -101,6 +110,10 @@ export const AIMessage = ({
   retrievalDisabled,
   currentPersona,
 }: {
+  selectedDocuments?: DanswerDocument[] | null;
+
+  toggleDocumentSelection?: () => void;
+  docs?: DanswerDocument[] | null;
   alternativeAssistant?: Persona | null;
   currentPersona: Persona;
   messageId: number | null;
@@ -129,6 +142,9 @@ export const AIMessage = ({
   if (!isReady) {
     return <div />;
   }
+
+  const selectedDocumentIds =
+    selectedDocuments?.map((document) => document.document_id) || [];
 
   if (!isComplete) {
     const trimIncompleteCodeSection = (
@@ -167,9 +183,9 @@ export const AIMessage = ({
   ) : undefined;
 
   return (
-    <div className={"py-5 px-5 flex -mr-6 w-full"}>
-      <div className="mx-auto w-searchbar-xs 2xl:w-searchbar-sm 3xl:w-searchbar relative">
-        <div className="ml-8">
+    <div className={"py-5 px-2 lg:px-5  flex -mr-6 w-full"}>
+      <div className="mx-auto w-[90%] max-w-searchbar-max relative">
+        <div className="xl:ml-8">
           <div className="flex">
             <AssistantIcon
               size="small"
@@ -182,12 +198,12 @@ export const AIMessage = ({
                 : personaName || "Danswer"}
             </div>
 
-            {query === undefined &&
+            {/* {query === undefined &&
               hasDocs &&
               handleShowRetrieved !== undefined &&
               isCurrentlyShowingRetrieved !== undefined &&
               !retrievalDisabled && (
-                <div className="flex w-message-xs 2xl:w-message-sm 3xl:w-message-default absolute ml-8">
+                <div className="flex w-full max-w-message-max absolute ml-8">
                   <div className="ml-auto">
                     <ShowHideDocsButton
                       messageId={messageId}
@@ -195,11 +211,11 @@ export const AIMessage = ({
                       handleShowRetrieved={handleShowRetrieved}
                     />
                   </div>
-                </div>
-              )}
+                </divch>
+              )} */}
           </div>
 
-          <div className="w-message-xs 2xl:w-message-sm 3xl:w-message-default break-words mt-1 ml-8">
+          <div className="max-w-message-max break-words mt-1 ml-8">
             {(!toolCall || toolCall.tool_name === SEARCH_TOOL_NAME) && (
               <>
                 {query !== undefined &&
@@ -269,26 +285,35 @@ export const AIMessage = ({
                     components={{
                       a: (props) => {
                         const { node, ...rest } = props;
-                        // for some reason <a> tags cause the onClick to not apply
-                        // and the links are unclickable
-                        // TODO: fix the fact that you have to double click to follow link
-                        // for the first link
-                        return (
-                          <a
-                            key={node?.position?.start?.offset}
-                            onClick={() =>
-                              rest.href
-                                ? window.open(rest.href, "_blank")
-                                : undefined
-                            }
-                            className="cursor-pointer text-link hover:text-link-hover"
-                            // href={rest.href}
-                            // target="_blank"
-                            // rel="noopener noreferrer"
-                          >
-                            {rest.children}
-                          </a>
-                        );
+                        const value = rest.children;
+                        if (value?.toString().startsWith("[")) {
+                          // for some reason <a> tags cause the onClick to not apply
+                          // and the links are unclickable
+                          // TODO: fix the fact that you have to double click to follow link
+                          // for the first link
+                          return (
+                            <Citation
+                              link={rest?.href}
+                              key={node?.position?.start?.offset}
+                            >
+                              {rest.children}
+                            </Citation>
+                          );
+                        } else {
+                          return (
+                            <a
+                              key={node?.position?.start?.offset}
+                              onClick={() =>
+                                rest.href
+                                  ? window.open(rest.href, "_blank")
+                                  : undefined
+                              }
+                              className="cursor-pointer text-link hover:text-link-hover"
+                            >
+                              {rest.children}
+                            </a>
+                          );
+                        }
                       },
                       code: (props) => (
                         <CodeBlock {...props} content={content as string} />
@@ -309,7 +334,101 @@ export const AIMessage = ({
             ) : isComplete ? null : (
               defaultLoader
             )}
-            {citedDocuments && citedDocuments.length > 0 && (
+
+            {isComplete && docs && docs.length > 0 && (
+              <div className="mt-2 -mx-8 w-full mb-4  flex relative ">
+                <div className="absolute left-0 top-0  h-full bg-gradient-to-l from-background/0  via-background/40 backdrop-blur-xs  to-background w-[40px]" />
+
+                <div className="absolute right-6 top-0  h-full bg-gradient-to-r from-background/0  via-background/40 backdrop-blur-xs  to-background w-[40px]" />
+                <div className=" w-full  overflow-x-scroll no-scrollbar">
+                  {/* <div className="absolute left-0 h-full w-20 bg-gradient-to-r from-background to-background/20 " /> */}
+                  <div className="px-8 flex gap-x-2">
+                    {docs
+                      .filter(
+                        (doc, index, self) =>
+                          doc.document_id &&
+                          doc.document_id !== "" &&
+                          index ===
+                            self.findIndex(
+                              (d) => d.document_id === doc.document_id
+                            )
+                      )
+                      .map((doc) => (
+                        <div
+                          key={doc.document_id}
+                          className={`w-[200px] rounded-lg  flex-none transition-all duration-500 hover:bg-neutral-200 bg-neutral-100 px-4 py-2  border-b 
+                            ${
+                              !isComplete
+                                ? "animate-pulse opacity-90"
+                                : citedDocuments &&
+                                  (Array.isArray(citedDocuments) &&
+                                  citedDocuments.some(
+                                    ([_, obj]) =>
+                                      obj.document_id === doc.document_id
+                                  )
+                                    ? "opacity-100"
+                                    : "opacity-20")
+                            } ${selectedDocumentIds.includes(doc.document_id) && "!opacity-100 "}
+                        `}
+                        >
+                          <a
+                            href={doc.link}
+                            target="_blank"
+                            className="text-sm  flex justify-between font-semibold text-neutral-800"
+                          >
+                            <p className="line-clamp-1">
+                              {
+                                doc.document_id.split("/")[
+                                  doc.document_id.split("/").length - 1
+                                ]
+                              }
+                            </p>
+                            <div className="flex-none">
+                              <SourceIcon
+                                sourceType={doc.source_type}
+                                iconSize={18}
+                              />
+                            </div>
+                          </a>
+
+                          <div className="flex  overscroll-x-scroll mt-1">
+                            <DocumentMetadataBlock document={doc} />
+                          </div>
+
+                          {/* <p className="pl-1 pt-2 pb-1 break-words">
+                            {buildDocumentSummaryDisplay(doc.match_highlights, doc.blurb)}
+                          </p> */}
+                          <div className="line-clamp-3 text-xs break-words   pt-1">
+                            {doc.blurb}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    if (toggleDocumentSelection) {
+                      toggleDocumentSelection();
+                    }
+                  }}
+                  className="my-auto h-full w-6  flex-none p-2"
+                >
+                  <svg
+                    className="text-neutral-700 hover:text-neutral-900 h-6 w-6"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="200"
+                    height="200"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M16.75 11.989a1.82 1.82 0 0 1-.57 1.36l-6.82 6.1a1.27 1.27 0 0 1-.65.31h-.19a1.3 1.3 0 0 1-.52-.1a1.23 1.23 0 0 1-.54-.47a1.19 1.19 0 0 1-.21-.68v-13a1.2 1.2 0 0 1 .21-.69a1.23 1.23 0 0 1 1.25-.56c.24.039.464.143.65.3l6.76 6.09c.19.162.344.363.45.59c.114.234.175.49.18.75"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
+            {/* {citedDocuments && citedDocuments.length > 0 && (
               <div className="mt-2">
                 <b className="text-sm text-emphasis">Sources:</b>
                 <div className="flex flex-wrap gap-2">
@@ -327,6 +446,7 @@ export const AIMessage = ({
                           [{citationKey}] {document!.semantic_identifier}
                         </div>
                       );
+
                       if (document.link) {
                         return (
                           <a
@@ -351,10 +471,10 @@ export const AIMessage = ({
                     })}
                 </div>
               </div>
-            )}
+            )} */}
           </div>
           {handleFeedback && (
-            <div className="flex flex-col md:flex-row gap-x-0.5 ml-8 mt-1.5">
+            <div className="flex md:flex-row gap-x-0.5 ml-8 mt-1.5">
               <CopyButton content={content.toString()} />
               <Hoverable
                 icon={FiThumbsUp}
@@ -450,12 +570,12 @@ export const HumanMessage = ({
 
   return (
     <div
-      className="pt-5 pb-1 px-5 flex -mr-6 w-full relative"
+      className="pt-5 pb-1 px-2 lg:px-5 flex -mr-6 w-full relative"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="mx-auto w-searchbar-xs 2xl:w-searchbar-sm 3xl:w-searchbar">
-        <div className="ml-8">
+      <div className="mx-auto w-full max-w-searchbar-max">
+        <div className="xl:ml-8">
           <div className="flex">
             <div className="p-1 bg-user rounded-lg h-fit">
               <div className="text-inverted">
@@ -465,8 +585,8 @@ export const HumanMessage = ({
 
             <div className="font-bold text-emphasis ml-2 my-auto">You</div>
           </div>
-          <div className="mx-auto mt-1 ml-8 w-searchbar-xs 2xl:w-searchbar-sm 3xl:w-searchbar-default flex flex-wrap">
-            <div className="w-message-xs 2xl:w-message-sm 3xl:w-message-default break-words">
+          <div className="mx-auto mt-1 ml-8 mx-4 max-w-searchbar-max flex flex-wrap">
+            <div className="w-full max-w-message-max break-words">
               <FileDisplay files={files || []} />
 
               {isEditing ? (

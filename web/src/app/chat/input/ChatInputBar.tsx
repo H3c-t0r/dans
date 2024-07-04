@@ -23,10 +23,11 @@ import { useChatContext } from "@/components/context/ChatContext";
 import { getFinalLLM } from "@/lib/llm/utils";
 import { FileDescriptor } from "../interfaces";
 import { InputBarPreview } from "../files/InputBarPreview";
-import { RobotIcon } from "@/components/icons/icons";
+import { ConfigureIcon, RobotIcon } from "@/components/icons/icons";
 import { Hoverable } from "@/components/Hoverable";
 import { AssistantIcon } from "@/components/assistants/AssistantIcon";
 import { Tooltip } from "@/components/tooltip/Tooltip";
+import { IconType } from "react-icons";
 const MAX_INPUT_HEIGHT = 200;
 
 export function ChatInputBar({
@@ -197,13 +198,12 @@ export function ChatInputBar({
       <div className="flex justify-center pb-2 max-w-screen-lg mx-auto mb-2">
         <div
           className="
-            w-full
+            w-[90%]
             shrink
+            bg-background
             relative
             px-4
-            w-searchbar-xs
-            2xl:w-searchbar-sm
-            3xl:w-searchbar
+            max-w-searchbar-max
             mx-auto
           "
         >
@@ -212,11 +212,11 @@ export function ChatInputBar({
               ref={suggestionsRef}
               className="text-sm absolute inset-x-0 top-0 w-full transform -translate-y-full"
             >
-              <div className="rounded-lg py-1.5 bg-white border border-border-medium overflow-hidden shadow-lg mx-2 px-1.5 mt-2 rounded z-10">
+              <div className="rounded-lg py-1.5 bg-background border border-border-medium overflow-hidden shadow-lg mx-2 px-1.5 mt-2 rounded z-10">
                 {filteredPersonas.map((currentPersona, index) => (
                   <button
                     key={index}
-                    className={`px-2 ${assistantIconIndex == index && "bg-hover"} rounded content-start flex gap-x-1 py-1.5 w-full  hover:bg-hover cursor-pointer`}
+                    className={`px-2 ${assistantIconIndex == index && "bg-hover-lightish"} rounded  rounded-lg content-start flex gap-x-1 py-2 w-full  hover:bg-hover-lightish cursor-pointer`}
                     onClick={() => {
                       updateCurrentPersona(currentPersona);
                     }}
@@ -232,7 +232,7 @@ export function ChatInputBar({
                 <a
                   key={filteredPersonas.length}
                   target="_blank"
-                  className={`${assistantIconIndex == filteredPersonas.length && "bg-hover"} px-3 flex gap-x-1 py-2 w-full  items-center  hover:bg-hover-light cursor-pointer"`}
+                  className={`${assistantIconIndex == filteredPersonas.length && "bg-hover"} rounded rounded-lg px-3 flex gap-x-1 py-2 w-full  items-center  hover:bg-hover-lightish cursor-pointer"`}
                   href="/assistants/new"
                 >
                   <FiPlus size={17} />
@@ -241,11 +241,9 @@ export function ChatInputBar({
               </div>
             </div>
           )}
-
           <div>
             <SelectedFilterDisplay filterManager={filterManager} />
           </div>
-
           <div
             className="
               opacity-100
@@ -254,7 +252,7 @@ export function ChatInputBar({
               flex
               flex-col
               border
-              border-border-medium
+              border-[#E5E7EB]
               rounded-lg
               overflow-hidden
               bg-background-weak
@@ -263,15 +261,13 @@ export function ChatInputBar({
             "
           >
             {alternativeAssistant && (
-              <div className="flex flex-wrap gap-y-1 gap-x-2 px-2 pt-1.5 w-full">
+              <div className="border-b text-neutral-700 flex flex-wrap gap-y-1 gap-x-2 px-2  w-full">
                 <div
                   ref={interactionsRef}
-                  className="bg-background-subtle p-2 rounded-t-lg  items-center flex w-full"
+                  className=" p-2 rounded-t-lg items-center flex w-full"
                 >
                   <AssistantIcon assistant={alternativeAssistant} border />
-                  <p className="ml-3 text-strong my-auto">
-                    {alternativeAssistant.name}
-                  </p>
+                  <p className="ml-3 my-auto">{alternativeAssistant.name}</p>
                   <div className="flex gap-x-1 ml-auto ">
                     <Tooltip
                       content={
@@ -284,7 +280,6 @@ export function ChatInputBar({
                         <Hoverable icon={FiInfo} />
                       </button>
                     </Tooltip>
-
                     <Hoverable
                       icon={FiX}
                       onClick={() => onSetSelectedAssistant(null)}
@@ -368,31 +363,9 @@ export function ChatInputBar({
               <ChatInputOption
                 flexPriority="shrink"
                 name={selectedAssistant ? selectedAssistant.name : "Assistants"}
-                icon={FaBrain}
+                icon={ConfigureIcon as IconType}
                 onClick={() => setConfigModalActiveTab("assistants")}
               />
-
-              <ChatInputOption
-                flexPriority="second"
-                name={
-                  llmOverrideManager.llmOverride.modelName ||
-                  (selectedAssistant
-                    ? selectedAssistant.llm_model_version_override || llmName
-                    : llmName)
-                }
-                icon={FiCpu}
-                onClick={() => setConfigModalActiveTab("llms")}
-              />
-
-              {!retrievalDisabled && (
-                <ChatInputOption
-                  flexPriority="stiff"
-                  name="Filters"
-                  icon={FiFilter}
-                  onClick={() => setConfigModalActiveTab("filters")}
-                />
-              )}
-
               <ChatInputOption
                 flexPriority="stiff"
                 name="File"
@@ -426,12 +399,24 @@ export function ChatInputBar({
                   }
                 }}
               >
-                <FiSend
-                  size={18}
-                  className={`text-emphasis w-9 h-9 p-2 rounded-lg ${
-                    message ? "bg-blue-200" : ""
+                <svg
+                  className={`text-emphasis text-white w-7 h-7 p-1 rounded-full ${
+                    message ? "bg-neutral-700" : "bg-[#D7D7D7]"
                   }`}
-                />
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="200"
+                  height="200"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 19V5m-7 7l7-7l7 7"
+                  />
+                </svg>
               </div>
             </div>
           </div>

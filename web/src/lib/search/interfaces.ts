@@ -48,6 +48,7 @@ export interface DanswerDocument {
   metadata: { [key: string]: string };
   updated_at: string | null;
   db_doc_id?: number;
+  validationState?: null | "good" | "bad";
 }
 
 export interface DocumentInfoPacket {
@@ -105,6 +106,8 @@ export interface SearchRequestArgs {
   timeRange: DateRangePickerValue | null;
   tags: Tag[];
   persona: Persona;
+  updateDocumentRelevance: (relevance: any) => void; // New callback function
+
   updateCurrentAnswer: (val: string) => void;
   updateQuotes: (quotes: Quote[]) => void;
   updateDocs: (documents: DanswerDocument[]) => void;
@@ -119,6 +122,7 @@ export interface SearchRequestArgs {
 export interface SearchRequestOverrides {
   searchType?: SearchType;
   offset?: number;
+  overrideMessage?: string;
 }
 
 export interface ValidQuestionResponse {
