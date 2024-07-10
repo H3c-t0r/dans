@@ -22,6 +22,7 @@ from danswer.db.chat import get_or_create_root_message
 from danswer.db.chat import translate_db_message_to_chat_message_detail
 from danswer.db.chat import translate_db_search_doc_to_server_search_doc
 from danswer.db.engine import get_session_context_manager
+from danswer.db.models import Persona
 from danswer.db.models import User
 from danswer.db.persona import get_prompt_by_id
 from danswer.llm.answering.answer import Answer
@@ -56,6 +57,7 @@ from danswer.tools.tool import ToolResponse
 from danswer.tools.tool_runner import ToolCallKickoff
 from danswer.utils.logger import setup_logger
 from danswer.utils.timing import log_generator_function_time
+from ee.danswer.server.query_and_chat.utils import create_temporary_persona
 
 logger = setup_logger()
 
@@ -76,6 +78,7 @@ AnswerObjectIterator = Iterator[
 def stream_answer_objects(
     query_req: DirectQARequest,
     user: User | None,
+    temporary_persona: Persona | None,
     # These need to be passed in because in Web UI one shot flow,
     # we can have much more document as there is no history.
     # For Slack flow, we need to save more tokens for the thread context
@@ -88,8 +91,9 @@ def stream_answer_objects(
     bypass_acl: bool = False,
     use_citations: bool = False,
     danswerbot_flow: bool = False,
-    retrieval_metrics_callback: Callable[[RetrievalMetricsContainer], None]
-    | None = None,
+    retrieval_metrics_callback: (
+        Callable[[RetrievalMetricsContainer], None] | None
+    ) = None,
     rerank_metrics_callback: Callable[[RerankMetricsContainer], None] | None = None,
 ) -> AnswerObjectIterator:
     """Streams in order:
@@ -107,10 +111,13 @@ def stream_answer_objects(
         db_session=db_session,
         description="",  # One shot queries don't need naming as it's never displayed
         user_id=user_id,
+        # TODO fix this - should not store? Or add a new default value (-3) for custom?
         persona_id=query_req.persona_id,
         one_shot=True,
         danswerbot_flow=danswerbot_flow,
     )
+
+    persona = temporary_persona if temporary_persona else chat_session.persona
 
     llm_tokenizer = get_default_llm_token_encode()
 
@@ -139,11 +146,11 @@ def stream_answer_objects(
             prompt_id=query_req.prompt_id, user=None, db_session=db_session
         )
     if prompt is None:
-        if not chat_session.persona.prompts:
+        if not persona.prompts:
             raise RuntimeError(
                 "Persona does not have any prompts - this should never happen"
             )
-        prompt = chat_session.persona.prompts[0]
+        prompt = persona.prompts[0]
 
     # Create the first User query message
     new_user_message = create_new_chat_message(
@@ -157,21 +164,27 @@ def stream_answer_objects(
         commit=True,
     )
 
-    llm, fast_llm = get_llms_for_persona(persona=chat_session.persona)
+    llm, fast_llm = get_llms_for_persona(persona=persona)
     prompt_config = PromptConfig.from_model(prompt)
     document_pruning_config = DocumentPruningConfig(
         max_chunks=int(
-            chat_session.persona.num_chunks
-            if chat_session.persona.num_chunks is not None
-            else default_num_chunks
+            persona.num_chunks if persona.num_chunks is not None else default_num_chunks
         ),
         max_tokens=max_document_tokens,
         use_sections=query_req.chunks_above > 0 or query_req.chunks_below > 0,
     )
+
+    print(f"PERSONA's indices {persona.document_sets}")
+    print(f"DOCUMENT PRUNING {document_pruning_config}")
+    print(f"Retrievval options {query_req.retrieval_options}")
+
+    # retrieval_options = query_req.retrieval_options
+    # retrieval_options.filters.document_set =
+
     search_tool = SearchTool(
         db_session=db_session,
         user=user,
-        persona=chat_session.persona,
+        persona=persona,
         retrieval_options=query_req.retrieval_options,
         prompt_config=prompt_config,
         llm=llm,
@@ -192,7 +205,7 @@ def stream_answer_objects(
         question=query_msg.message,
         answer_style_config=answer_config,
         prompt_config=PromptConfig.from_model(prompt),
-        llm=get_main_llm_from_tuple(get_llms_for_persona(persona=chat_session.persona)),
+        llm=get_main_llm_from_tuple(get_llms_for_persona(persona=persona)),
         single_message_history=history_str,
         tools=[search_tool],
         force_use_tool=ForceUseTool(
@@ -308,14 +321,23 @@ def get_search_answer(
     bypass_acl: bool = False,
     use_citations: bool = False,
     danswerbot_flow: bool = False,
-    retrieval_metrics_callback: Callable[[RetrievalMetricsContainer], None]
-    | None = None,
+    retrieval_metrics_callback: (
+        Callable[[RetrievalMetricsContainer], None] | None
+    ) = None,
     rerank_metrics_callback: Callable[[RerankMetricsContainer], None] | None = None,
 ) -> OneShotQAResponse:
     """Collects the streamed one shot answer responses into a single object"""
     qa_response = OneShotQAResponse()
 
+    temporary_persona: Persona | None = None
+    if query_req.persona_config is not None:
+        new_persona = create_temporary_persona(
+            db_session=db_session, persona_config=query_req.persona_config
+        )
+        temporary_persona = new_persona
+
     results = stream_answer_objects(
+        temporary_persona=temporary_persona,
         query_req=query_req,
         user=user,
         max_document_tokens=max_document_tokens,

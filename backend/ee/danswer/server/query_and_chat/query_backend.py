@@ -26,7 +26,7 @@ from danswer.search.utils import dedupe_documents
 from danswer.search.utils import drop_llm_indices
 from danswer.utils.logger import setup_logger
 from ee.danswer.server.query_and_chat.models import DocumentSearchRequest
-
+from ee.danswer.server.query_and_chat.utils import create_temporary_persona
 
 logger = setup_logger()
 basic_router = APIRouter(prefix="/query")
@@ -99,12 +99,23 @@ def get_answer_with_quote(
     query = query_request.messages[0].message
     logger.info(f"Received query for one shot answer API with quotes: {query}")
 
-    persona = get_persona_by_id(
-        persona_id=query_request.persona_id,
-        user=user,
-        db_session=db_session,
-        is_for_edit=False,
-    )
+    if query_request.persona_config is not None:
+        new_persona = create_temporary_persona(
+            db_session=db_session, persona_config=query_request.persona_config
+        )
+        persona = new_persona
+        print("Created a new persona!")
+        print(persona.__dict__)
+
+    elif query_request.persona_id is not None:
+        persona = get_persona_by_id(
+            persona_id=query_request.persona_id,
+            user=user,
+            db_session=db_session,
+            is_for_edit=False,
+        )
+    else:
+        raise KeyError("Must provide persona ID or Persona Config")
 
     llm = get_main_llm_from_tuple(
         get_default_llms() if not persona else get_llms_for_persona(persona)

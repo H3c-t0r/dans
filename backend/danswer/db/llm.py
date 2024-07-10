@@ -2,7 +2,9 @@ from sqlalchemy import delete
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from danswer.db.models import DocumentSet
 from danswer.db.models import LLMProvider as LLMProviderModel
+from danswer.db.models import Tool as ToolModel
 from danswer.server.manage.llm.models import FullLLMProvider
 from danswer.server.manage.llm.models import LLMProviderUpsertRequest
 
@@ -44,6 +46,20 @@ def upsert_llm_provider(
     db_session.commit()
 
     return FullLLMProvider.from_model(llm_provider_model)
+
+
+def fetch_existing_doc_sets(
+    db_session: Session, doc_ids: list[int]
+) -> list[DocumentSet]:
+    return list(
+        db_session.scalars(select(DocumentSet).where(DocumentSet.id.in_(doc_ids))).all()
+    )
+
+
+def fetch_existing_tools(db_session: Session, tool_ids: list[int]) -> list[ToolModel]:
+    return list(
+        db_session.scalars(select(ToolModel).where(ToolModel.id.in_(tool_ids))).all()
+    )
 
 
 def fetch_existing_llm_providers(db_session: Session) -> list[LLMProviderModel]:
