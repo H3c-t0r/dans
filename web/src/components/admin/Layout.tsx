@@ -32,6 +32,8 @@ import {
   FiSlack,
   FiTool,
 } from "react-icons/fi";
+import { HealthCheckBanner } from "../health/healthcheck";
+import { getSecondsUntilExpiration } from "@/lib/time";
 
 export async function Layout({ children }: { children: React.ReactNode }) {
   const tasks = [getAuthTypeMetadataSS(), getCurrentUserSS()];
@@ -63,8 +65,13 @@ export async function Layout({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const secondsUntilExpiration = getSecondsUntilExpiration(user);
+
   return (
     <div className="h-screen overflow-y-hidden">
+      <div className="m-3">
+        <HealthCheckBanner secondsUntilExpiration={secondsUntilExpiration} />
+      </div>
       <div className="absolute top-0 z-50 w-full">
         <Header user={user} />
       </div>

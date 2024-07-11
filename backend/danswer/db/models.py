@@ -11,6 +11,7 @@ from uuid import UUID
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseOAuthAccountTableUUID
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTableUUID
 from fastapi_users_db_sqlalchemy.access_token import SQLAlchemyBaseAccessTokenTableUUID
+from fastapi_users_db_sqlalchemy.generics import TIMESTAMPAware
 from sqlalchemy import Boolean
 from sqlalchemy import DateTime
 from sqlalchemy import Enum
@@ -120,6 +121,10 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
         postgresql.ARRAY(Integer), nullable=True
     )
 
+    oidc_expiry: Mapped[datetime.datetime] = mapped_column(
+        TIMESTAMPAware(timezone=True), nullable=True
+    )
+
     # relationships
     credentials: Mapped[list["Credential"]] = relationship(
         "Credential", back_populates="user", lazy="joined"
@@ -138,7 +143,7 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
 
 
 class AccessToken(SQLAlchemyBaseAccessTokenTableUUID, Base):
-    pass
+    expiry_length: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
 class ApiKey(Base):

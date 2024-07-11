@@ -72,6 +72,7 @@ import { TbLayoutSidebarRightExpand } from "react-icons/tb";
 import { SIDEBAR_WIDTH_CONST } from "@/lib/constants";
 
 import ResizableSection from "@/components/resizable/ResizableSection";
+import { getSecondsUntilExpiration } from "@/lib/time";
 
 const TEMP_USER_MESSAGE_ID = -1;
 const TEMP_ASSISTANT_MESSAGE_ID = -2;
@@ -1049,7 +1050,6 @@ export function ChatPage({
         ? "0px"
         : `${usedSidebarWidth}px`;
     }
-
     setShowDocSidebar((showDocSidebar) => !showDocSidebar); // Toggle the state which will in turn toggle the class
   };
 
@@ -1072,6 +1072,7 @@ export function ChatPage({
   const [editingRetrievalEnabled, setEditingRetrievalEnabled] = useState(false);
   const sidebarElementRef = useRef<HTMLDivElement>(null);
   const innerSidebarElementRef = useRef<HTMLDivElement>(null);
+  // const secondsUntilExpiration = getSecondsUntilExpiration(user);
 
   const currentPersona = selectedAssistant || livePersona;
 
@@ -1088,6 +1089,9 @@ export function ChatPage({
     <>
       <HealthCheckBanner />
       <InstantSSRAutoRefresh />
+      {/* <div className="m-3">
+        <HealthCheckBanner secondsUntilExpiration={secondsUntilExpiration} />
+      </div> */}
 
       {/* ChatPopup is a custom popup that displays a admin-specified message on initial user visit. 
       Only used in the EE version of the app. */}

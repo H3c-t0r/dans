@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 from typing import TYPE_CHECKING
 
@@ -20,7 +21,7 @@ from danswer.server.models import FullUserSnapshot
 from danswer.server.models import InvitedUserSnapshot
 
 if TYPE_CHECKING:
-    from danswer.db.models import User as UserModel
+    pass
 
 
 class VersionResponse(BaseModel):
@@ -46,9 +47,17 @@ class UserInfo(BaseModel):
     is_verified: bool
     role: UserRole
     preferences: UserPreferences
+    oidc_expiry: datetime | None = None
+    current_token_created_at: datetime | None = None
+    current_token_expiry_length: int | None = None
 
     @classmethod
-    def from_model(cls, user: "UserModel") -> "UserInfo":
+    def from_model(
+        cls,
+        user,
+        current_token_created_at=None,
+        current_token_expiry_length=None,
+    ) -> "UserInfo":
         return cls(
             id=str(user.id),
             email=user.email,
@@ -57,6 +66,9 @@ class UserInfo(BaseModel):
             is_verified=user.is_verified,
             role=user.role,
             preferences=(UserPreferences(chosen_assistants=user.chosen_assistants)),
+            oidc_expiry=user.oidc_expiry,
+            current_token_created_at=current_token_created_at,
+            current_token_expiry_length=current_token_expiry_length,
         )
 
 
