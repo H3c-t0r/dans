@@ -6,8 +6,7 @@ import { Persona } from "../admin/assistants/interfaces";
 import { ChatSession } from "../chat/interfaces";
 import { useState } from "react";
 
-export default function ToggleSearch({
-  toggleSearchSidebar,
+export default function WrappedSearch({
   querySessions,
   ccPairs,
   documentSets,
@@ -16,8 +15,8 @@ export default function ToggleSearch({
   tags,
   user,
   agenticSearchEnabled,
+  initiallyToggled,
 }: {
-  toggleSearchSidebar: boolean;
   querySessions: ChatSession[];
   ccPairs: CCPairBasicInfo[];
   documentSets: DocumentSet[];
@@ -26,28 +25,25 @@ export default function ToggleSearch({
   tags: Tag[];
   user: User | null;
   agenticSearchEnabled: boolean;
+  initiallyToggled: boolean;
 }) {
-  const [toggledSidebar, setToggledSidebar] = useState<boolean>(
-    toggleSearchSidebar || false
-  );
-  const toggle = () => {
-    setToggledSidebar((toggledSidebar) => !toggledSidebar);
-  };
-
   return (
-    <FunctionalWrapper toggledSidebar={toggledSidebar}>
-      <SearchSection
-        agenticSearchEnabled={agenticSearchEnabled}
-        toggle={toggle}
-        toggledSidebar={toggledSidebar}
-        querySessions={querySessions}
-        user={user}
-        ccPairs={ccPairs}
-        documentSets={documentSets}
-        personas={personas}
-        tags={tags}
-        defaultSearchType={searchTypeDefault}
-      />
-    </FunctionalWrapper>
+    <FunctionalWrapper
+      initiallyToggled={initiallyToggled}
+      content={(toggledSidebar, toggle) => (
+        <SearchSection
+          agenticSearchEnabled={agenticSearchEnabled}
+          toggle={toggle}
+          toggledSidebar={toggledSidebar}
+          querySessions={querySessions}
+          user={user}
+          ccPairs={ccPairs}
+          documentSets={documentSets}
+          personas={personas}
+          tags={tags}
+          defaultSearchType={searchTypeDefault}
+        />
+      )}
+    />
   );
 }

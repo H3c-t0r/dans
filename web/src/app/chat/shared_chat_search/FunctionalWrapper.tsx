@@ -70,13 +70,13 @@ const ToggleSwitch = () => {
 };
 
 export default function FunctionalWrapper({
-  children,
-  // content,
-  toggledSidebar,
+  // children,
+  initiallyToggled,
+  content,
 }: {
-  children: React.ReactNode;
-  // content: (toggle: (toggled: boolean) => void) => ReactNode;
-  toggledSidebar: boolean;
+  // children: React.ReactNode;
+  content: (toggledSidebar: boolean, toggle: () => void) => ReactNode;
+  initiallyToggled: boolean;
 }) {
   const router = useRouter();
 
@@ -112,6 +112,12 @@ export default function FunctionalWrapper({
   }, [router]);
   const settings = useContext(SettingsContext)?.settings;
 
+  const [toggledSidebar, setToggledSidebar] = useState(initiallyToggled);
+
+  const toggle = () => {
+    setToggledSidebar((toggledSidebar) => !toggledSidebar);
+  };
+
   return (
     <>
       {(!settings ||
@@ -119,23 +125,18 @@ export default function FunctionalWrapper({
         <div className="z-[40] flex fixed top-4 left-1/2 transform -translate-x-1/2">
           <div
             style={{ transition: "width 0.30s ease-out" }}
-            className={`flex-none 
-                        overflow-y-hidden 
-                        bg-background-weak 
-                        transition-all 
-                        bg-opacity-80
-                        duration-300 
-                        ease-in-out
-                        h-full
+            className={`flex-none overflow-y-hidden bg-background-weak transition-all bg-opacity-80duration-300 ease-in-out h-full
                         ${toggledSidebar ? "w-[300px] " : "w-[0px]"}`}
-          ></div>
+          />
           <div className="relative">
             <ToggleSwitch />
           </div>
         </div>
       )}
 
-      <div className="absolute left-0 top-0 w-full h-full">{children}</div>
+      <div className="absolute left-0 top-0 w-full h-full">
+        {content(toggledSidebar, toggle)}
+      </div>
     </>
   );
 }
