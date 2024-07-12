@@ -549,7 +549,6 @@ def create_db_search_doc(
 
     db_session.add(db_search_doc)
     db_session.commit()
-
     return db_search_doc
 
 

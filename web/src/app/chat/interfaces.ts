@@ -111,6 +111,7 @@ export interface BackendChatSession {
 export interface BackendMessage {
   message_id: number;
   comments: any;
+  chat_session_id: number;
   parent_message: number | null;
   latest_child_message: number | null;
   message: string;

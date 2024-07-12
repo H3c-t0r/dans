@@ -171,7 +171,6 @@ class SearchFeedbackRequest(BaseModel):
 
         if click is False and feedback is None:
             raise ValueError("Empty feedback received.")
-
         return values
 
 
