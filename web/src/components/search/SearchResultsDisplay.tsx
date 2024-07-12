@@ -30,8 +30,6 @@ const getSelectedDocumentIds = (
   return selectedDocumentIds;
 };
 
-// type SearchResultsType = DocumentSearchResults;
-
 export const SearchResultsDisplay = ({
   agenticResults,
   searchResponse,

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from danswer.chat.chat_utils import llm_doc_from_inference_section
 from danswer.chat.models import LlmDoc
+from danswer.chat.models import RelevanceChunk
 from danswer.configs.chat_configs import MULTILINGUAL_QUERY_EXPANSION
 from danswer.db.embedding_model import get_current_db_embedding_model
 from danswer.db.models import User
@@ -112,10 +113,8 @@ class SearchPipeline:
             Generator[list[InferenceChunk] | list[str], None, None] | None
         ) = None
 
-    def evaluate(self, top_doc: LlmDoc, query: str) -> dict[str, Any]:
+    def evaluate(self, top_doc: LlmDoc, query: str) -> dict[str, RelevanceChunk]:
         # Group documents by document_id
-
-        print(f"Za answer to za query {query}")
 
         relevance: dict[str, Any] = {}
         results = {}
@@ -416,7 +415,7 @@ class SearchPipeline:
         return self._relevant_chunk_indices
 
     @property
-    def evaluate_response(self):
+    def relevance_summaries(self) -> dict[str, RelevanceChunk]:
         functions = [
             FunctionCall(self.evaluate, (final_context, self.search_query.query))
             for final_context in self._final_context_documents
@@ -424,12 +423,9 @@ class SearchPipeline:
 
         results = run_functions_in_parallel(function_calls=functions)
 
-        evaluated_responses = {}
-        for result in results:
-            value = results[result]
-            key = list(value.keys())[0]
-            evaluated_responses[key] = value[key]
-        return evaluated_responses
+        return {
+            next(iter(value)): value[next(iter(value))] for value in results.values()
+        }
 
     @property
     def chunk_relevance_list(self) -> list[bool]:

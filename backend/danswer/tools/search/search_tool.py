@@ -259,7 +259,7 @@ class SearchTool(Tool):
 
         if self.evaluate_response:
             yield ToolResponse(
-                id=SEARCH_EVALUATION_ID, response=search_pipeline.evaluate_response
+                id=SEARCH_EVALUATION_ID, response=search_pipeline.relevance_summaries
             )
 
     def final_result(self, *args: ToolResponse) -> JSON_ro:

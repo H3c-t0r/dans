@@ -42,7 +42,6 @@ import { SEARCH_TOGGLED_COOKIE_NAME } from "../resizable/contants";
 import { AGENTIC_SEARCH_TYPE_COOKIE_NAME } from "@/lib/constants";
 import Cookies from "js-cookie";
 import FixedLogo from "@/app/chat/shared_chat_search/FixedLogo";
-import { buildChatUrl } from "@/app/chat/lib";
 
 export type searchState = "input" | "searching" | "analyzing" | "summarizing";
 
@@ -84,7 +83,6 @@ export const SearchSection = ({
 }: SearchSectionProps) => {
   // Search Bar
   const [query, setQuery] = useState<string>("");
-
   const [comments, setComments] = useState<any>(null);
   const [contentEnriched, setContentEnriched] = useState(false);
 
@@ -193,7 +191,7 @@ export const SearchSection = ({
 
     async function initialSessionFetch() {
       const response = await fetch(
-        `/api/chat/get-search-session/${existingSearchessionId}`
+        `/api/query/get-search-session/${existingSearchessionId}`
       );
       const searchSession = (await response.json()) as SearchSession;
       const message = extractFirstUserMessage(searchSession);
@@ -290,15 +288,8 @@ export const SearchSection = ({
       ...(prevState || initialSearchResponse),
       messageId,
     }));
-    //
-    // confirm
-    // searchParams.delete()
-
-    // const newUrl = buildChatUrl(searchParams, messageId, null, true);
 
     router.replace(`/search?searchId=${chat_session_id}`);
-
-    // router.pureplacesh(newUrl, { scroll: false });
   };
 
   const updateDocumentRelevance = (relevance: Relevance) => {
@@ -307,28 +298,6 @@ export const SearchSection = ({
       additional_relevance: relevance,
     }));
     setSearchState("input");
-
-    // setContentEnriched(true);
-    // setIsFetching(false);
-    // if (isNewSession) {
-    //   if (finalMessage) {
-    //     setSelectedMessageForDocDisplay(finalMessage.message_id);
-    //   }
-    //   if (!searchParamBasedChatSessionName) {
-    //     await nameChatSession(currChatSessionId, currMessage);
-    //   }
-
-    //   // NOTE: don't switch pages if the user has navigated away from the chat
-    //   if (
-    //     currChatSessionId === chatSessionIdRef.current ||
-    //     chatSessionIdRef.current === null
-    //   ) {
-    //     const newUrl = buildChatUrl(searchParams, currChatSessionId, null);
-    // newUrl is like /chat?chatId=10
-    // current page is like /chat
-    //   }
-    // }
-    // setSearchState("input");
   };
 
   const updateComments = (comments: any) => {

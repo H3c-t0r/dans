@@ -250,10 +250,8 @@ def stream_answer_objects(
                     applied_time_cutoff=search_response_summary.final_filters.time_cutoff,
                     recency_bias_multiplier=search_response_summary.recency_bias_multiplier,
                 )
-
-                # analyze in the section
-
                 yield initial_response
+
             elif packet.id == SECTION_RELEVANCE_LIST_ID:
                 chunk_indices = packet.response
 
@@ -276,6 +274,7 @@ def stream_answer_objects(
                     relevance_summaries=packet.response
                 )
 
+                # Update Search Doc values
                 if reference_db_search_docs is not None:
                     update_search_docs_table_with_relevance(
                         db_session=db_session,
@@ -301,7 +300,6 @@ def stream_answer_objects(
         db_session=db_session,
         commit=True,
     )
-    print("message has now been saved!")
 
     msg_detail_response = translate_db_message_to_chat_message_detail(
         gen_ai_response_message
