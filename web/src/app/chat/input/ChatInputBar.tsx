@@ -309,11 +309,9 @@ export function ChatInputBar({
                     onClick={showDocs}
                     className="flex-none flex cursor-pointer hover:bg-background-subtle transition-colors duration-300 h-10 p-1 items-center gap-x-1 rounded-lg bg-background-weakish max-w-[100px]"
                   >
-                    <FileIcon className="!h-6 !w-6" />
+                    <FileIcon size={24} />
                     <p className="text-xs">
-                      {selectedDocuments.length}{" "}
-                      {/* document{selectedDocuments.length > 1 && "s"} */}
-                      selected
+                      {selectedDocuments.length} selected
                     </p>
                   </button>
                 )}
@@ -502,7 +500,8 @@ export function ChatInputBar({
                 }}
               >
                 <SendIcon
-                  className={`text-emphasis text-white !w-7 !h-7 p-1 rounded-full ${
+                  size={28}
+                  className={`text-emphasis text-white p-1 rounded-full ${
                     message ? "bg-background-solid" : "bg-[#D7D7D7]"
                   }`}
                 />

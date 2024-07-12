@@ -212,9 +212,8 @@ export const FullSearchBar = ({
             className=" flex  my-auto cursor-pointer"
           >
             <SendIcon
-              className={`text-emphasis text-white !w-7 !h-7 p-1 rounded-full ${
-                query ? "bg-background-solid" : "bg-[#D7D7D7]"
-              }`}
+              size={28}
+              className={`text-emphasis text-white p-1 rounded-full ${query ? "bg-background-solid" : "bg-[#D7D7D7]"}`}
             />
           </button>
         </div>

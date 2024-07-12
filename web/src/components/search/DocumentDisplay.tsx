@@ -195,7 +195,10 @@ export const DocumentDisplay = ({
         {!hide &&
           (document.relevant_search_result ||
             additional_relevance?.relevant) && (
-            <FaStar className="h-full !w-4 !h-4   text-xs text-accent  rounded w-fit my-auto select-none ml-auto mr-2" />
+            <FaStar
+              size={16}
+              className="h-full text-xs text-accent  rounded w-fit my-auto select-none ml-auto mr-2"
+            />
           )}
       </div>
       <div
