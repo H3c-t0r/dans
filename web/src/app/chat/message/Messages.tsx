@@ -157,6 +157,9 @@ export const AIMessage = ({
     setIsReady(true);
   }, []);
 
+  const [isVisible, setIsVisible] = useState(false);
+  const [isWithinInput, setIsWithinInput] = useState(false);
+
   // this is needed to give Prism a chance to load
   if (!isReady) {
     return <div />;
@@ -210,8 +213,29 @@ export const AIMessage = ({
       });
   }
 
+  const showFeedback = () => {
+    console.log("visible");
+    setIsVisible(true);
+  };
+  const hideFeedback = () => {
+    console.log("not visibles");
+    setIsVisible(false);
+  };
+
+  const enterFeedback = () => {
+    console.log("ENTER FEEDBAK");
+    setIsWithinInput(true);
+  };
+  const leaveFeedback = () => {
+    setIsWithinInput(false);
+  };
+
   return (
-    <div className={"group py-5 px-2 lg:px-5 relative flex "}>
+    <div
+      onMouseEnter={showFeedback}
+      onMouseLeave={hideFeedback}
+      className={"py-5 px-2 lg:px-5 relative flex "}
+    >
       <div className="mx-auto w-[90%] max-w-message-max">
         <div className="xl:ml-8">
           <div className=" flex">
@@ -412,10 +436,11 @@ export const AIMessage = ({
               {handleFeedback &&
                 (isActive ? (
                   <div
-                    className="
+                    className={`
                       flex md:flex-row gap-x-0.5 mt-1.5
-                      transition-all duration-300 ease-in-out
+                      transition-transform duration-300 ease-in-out
                       transform opacity-100 translate-y-0"
+                  `}
                   >
                     <TooltipGroup>
                       <CustomTooltip showTick line content="Copy!">
@@ -437,26 +462,30 @@ export const AIMessage = ({
                   </div>
                 ) : (
                   <div
-                    className="
+                    onMouseEnter={enterFeedback}
+                    onMouseLeave={leaveFeedback}
+                    className={`
                       absolute -bottom-6
-                      invisible hover:visible group-hover:visible hover:visible
-                      opacity-0 group-hover:opacity-100 ver:opacity-100
-                      transform translate-y-2 group-hover:translate-y-0
+                      invisible hover:visible ${(isVisible || isWithinInput) && "!visible"} hover:!visible
+                      opacity-0 ${(isVisible || isWithinInput) && "!opacity-100"} hover:!opacity-100
+                      transform translate-y-2 ${(isVisible || isWithinInput) && "!translate-y-0"} ho
                       flex md:flex-row gap-x-0.5 
-                      transition-all duration-300 ease-in-out
+                      transition-transform duration-300 ease-in-out
                        bg-background-weaker/40
-                       p-1.5 rounded-lg  "
+                       p-1.5 rounded-lg  `}
                   >
                     <TooltipGroup>
                       <CustomTooltip showTick line content="Copy!">
                         <CopyButton content={content.toString()} />
                       </CustomTooltip>
+
                       <CustomTooltip showTick line content="Good response!">
                         <HoverableIcon
                           icon={<LikeFeedbackIcon />}
                           onClick={() => handleFeedback("like")}
                         />
                       </CustomTooltip>
+
                       <CustomTooltip showTick line content="Bad response!">
                         <HoverableIcon
                           icon={<DislikeFeedbackIcon />}

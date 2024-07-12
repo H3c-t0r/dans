@@ -27,7 +27,10 @@ export const AnimatedToggle = ({
   const [width, setWidth] = useState("auto");
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const isMac = navigator.userAgent.indexOf("Mac") !== -1;
+  const isMac =
+    navigator.userAgent.length > 10
+      ? navigator.userAgent.indexOf("Mac") !== -1
+      : true;
 
   useEffect(() => {
     const updateWidth = () => {

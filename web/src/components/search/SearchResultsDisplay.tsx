@@ -145,7 +145,10 @@ export const SearchResultsDisplay = ({
         )
       : documents ?? [];
 
-  const isMac = navigator.userAgent.indexOf("Mac") !== -1;
+  const isMac =
+    navigator.userAgent.length > 10
+      ? navigator.userAgent.indexOf("Mac") !== -1
+      : true;
 
   return (
     <>

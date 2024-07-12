@@ -29,7 +29,11 @@ const ToggleSwitch = () => {
     router.push(tab === "search" ? "/search" : "/chat");
   };
 
-  const isMac = navigator.userAgent.indexOf("Mac") !== -1;
+  const isMac =
+    navigator.userAgent.length > 10
+      ? navigator.userAgent.indexOf("Mac") !== -1
+      : true;
+
   return (
     <div className="bg-gray-100 flex rounded-full p-1">
       <div

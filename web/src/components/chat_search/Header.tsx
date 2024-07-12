@@ -23,7 +23,10 @@ export default function FunctionalHeader({
   currentChatSession?: ChatSession | null | undefined;
   setSharingModalVisible?: (value: SetStateAction<boolean>) => void;
 }) {
-  const isMac = navigator.userAgent.indexOf("Mac") !== -1;
+  const isMac =
+    navigator.userAgent.length > 10
+      ? navigator.userAgent.indexOf("Mac") !== -1
+      : true;
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -54,7 +57,7 @@ export default function FunctionalHeader({
       {/* // <div className="pb-6 left-0 sticky -top-[.1]  z-10 w-full from-neutral-200 via-neutral-200 to-neutral-200/10  flex  z-10 bg-gradient-to-b via-50% blur"> */}
 
       <div className="mt-2 mx-4 text-solid flex w-full">
-        <div className=" absolute  z-[100] my-auto flex items-center text-xl font-bold ">
+        <div className="absolute z-[100] my-auto flex items-center text-xl font-bold">
           <FiSidebar className="!h-5 !w-5" />
           {/* <Logo /> */}
 
@@ -74,7 +77,6 @@ export default function FunctionalHeader({
                 }
               >
                 <NewChatIcon className="ml-2 my-auto !h-5 !w-5 cursor-pointer text-solid hover:text-dark transition-colors duration-300" />
-                {/* <PlusCircleIcon className="ml-2 my-auto !h-6 !w-6 cursor-pointer text-solid hover:text-dark transition-colors duration-300" /> */}
               </a>
             </Tooltip>
           )}

@@ -46,7 +46,10 @@ interface HistorySidebarProps {
   toggleSidebar?: () => void;
   toggled?: boolean;
 }
-const isMac = navigator.userAgent.indexOf("Mac") !== -1;
+const isMac =
+  navigator.userAgent.length > 10
+    ? navigator.userAgent.indexOf("Mac") !== -1
+    : true;
 
 // forwardRef<HTMLDivElement, DocumentSidebarProps>(
 export const HistorySidebar = forwardRef<HTMLDivElement, HistorySidebarProps>(

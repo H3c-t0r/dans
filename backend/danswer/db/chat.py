@@ -508,14 +508,12 @@ def update_search_docs_table_with_relevance(
     reference_db_search_docs: list[SearchDoc],
     relevance_summary: LLMRelevanceSummaryResponse,
 ) -> None:
-    print(f"ZA LENGTH if {len(reference_db_search_docs)}")
     for search_doc in reference_db_search_docs:
         relevance_data = relevance_summary.relevance_summaries.get(
             search_doc.document_id
         )
-        if relevance_data:
-            print(f"RELEVANCE {search_doc.id}")
-            resposne = db_session.execute(
+        if relevance_data is not None:
+            db_session.execute(
                 update(SearchDoc)
                 .where(SearchDoc.document_id == search_doc.document_id)
                 .values(
@@ -523,9 +521,10 @@ def update_search_docs_table_with_relevance(
                     relevance_explanation=relevance_data.get("content"),
                 )
             )
-            print(resposne)
         else:
-            print("ZZA Missing docs")
+            logger.warning(
+                f"No relevance data generated for document {search_doc.document_id}"
+            )
     db_session.commit()
 
 

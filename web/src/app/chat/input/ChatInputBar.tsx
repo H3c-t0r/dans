@@ -304,7 +304,6 @@ export function ChatInputBar({
             )}
             <div className="flex  gap-x-2 px-2 pt-2">
               <div className="flex  gap-x-1 px-2 overflow-y-auto overflow-x-scroll items-end weakbackground">
-                <input type="text" name="" id="" />
                 {selectedDocuments.length > 0 && (
                   <button
                     onClick={showDocs}

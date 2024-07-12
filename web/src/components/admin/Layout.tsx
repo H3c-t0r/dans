@@ -80,7 +80,7 @@ export async function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="h-screen overflow-y-hidden">
       <div className="flex h-full ">
-        <div className="w-64 z-20 bg-background-weak pt-4 pb-8 h-full border-r border-border  weakbackground overflow-auto">
+        <div className="w-64 z-20 bg-background-weak pt-4 pb-8 h-full border-r border-border weakbackground overflow-auto">
           <AdminSidebar
             collections={[
               {
@@ -310,31 +310,13 @@ export async function Layout({ children }: { children: React.ReactNode }) {
         </div>
         <div className="pb-8 relative  h-full overflow-y-auto w-full">
           <div className="fixed bg-background left-0 border-b  gap-x-4 mb-8 px-4 py-2 w-full items-center flex justify-end">
-            {/* <a className="p-1 rounded-lg bg-background-weak text-xs">
-            <BackIcon />
-              Back to App
-            </a> */}
             <a
               href="/chat"
-              className="transition-all duration-150 cursor-pointer p-1 text-sm items-center flex gap-x-1 px-2 py-1 rounded-lg hover:shadow-sm hover:ring-1 hover:ring-ingio-900/40 hover:bg-opacity-90 text-indigo-900 bg-indigo-300"
+              className="transition-all duration-150 cursor-pointer p-1 text-sm items-center flex gap-x-1 px-2 py-1 rounded-lg hover:shadow-sm hover:ring-1 hover:ring-ingio-900/40 hover:bg-opacity-90 text-neutral-100 bg-accent"
             >
-              <BackIcon className="!h-4 !w-4" />
+              <BackIcon size={20} className="text-neutral" />
               Back to Danswer
             </a>
-            {/* <a
-              href="/chat"
-              className="transition-all duration-150 cursor-pointer p-1 text-sm items-center flex gap-x-1 px-2 py-1 rounded-lg hover:shadow-sm hover:ring-1 hover:ring-[#E85801]/40 hover:bg-opacity-90 text-[#E85801] bg-[#FAEBE5]"
-            >
-              <ChatIcon className="!h-3 !w-3" />
-              Chat
-            </a> */}
-            {/* <a
-              href="/search"
-              className="transition-all duration-150 cursor-pointer p-1 text-sm items-center flex gap-x-1 px-2 py-1 rounded-lg hover:shadow-xs text-[#0191E8] hover:ring-1 hover:ring-[#0191E8]/40 hover:bg-opacity-90  bg-[#E5F4FA]"
-            >
-              <SearchIcon className="!h-3 !w-3" />
-              Search
-            </a> */}
             <UserDropdown user={user} />
           </div>
           <div className="pt-20 flex overflow-y-auto h-full px-4 md:px-12">
