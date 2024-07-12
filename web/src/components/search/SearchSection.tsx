@@ -511,7 +511,7 @@ export const SearchSection = ({
           </div>
         </div>
 
-        <div className="absolute left-0 w-full top-0 ">
+        <div className="absolute left-0 w-full top-0">
           <FunctionalHeader
             showSidebar={showDocSidebar}
             page="search"

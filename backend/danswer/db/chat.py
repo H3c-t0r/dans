@@ -277,11 +277,6 @@ def get_chat_message(
     return chat_message
 
 
-# from sqlalchemy import select
-# from sqlalchemy.orm import Session
-# from uuid import UUID
-
-
 def get_search_docs_for_chat_message(
     chat_message_id: int, db_session: Session
 ) -> list[SearchDoc]:

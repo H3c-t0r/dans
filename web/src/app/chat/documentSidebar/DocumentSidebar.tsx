@@ -91,12 +91,12 @@ export const DocumentSidebar = forwardRef<HTMLDivElement, DocumentSidebarProps>(
             closeSidebar();
           }
         }}
-        className="fixed inset-0 transition transform transition-all duration-300 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+        className="fixed inset-0 transition transform transition-all duration-300 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
       >
         <div
           ref={ref}
           style={{ width: initialWidth }}
-          className={`ml-auto  rounded-l-lg relative border-l bg-lighter sidebar z-50 absolute right-0 h-screen `}
+          className={`ml-auto rounded-l-lg relative border-l bg-lighter sidebar z-50 absolute right-0 h-screen `}
         >
           <div className="flex-initial overflow-y-hidden flex flex-col h-screen pb-10">
             {popup}
@@ -166,15 +166,15 @@ export const DocumentSidebar = forwardRef<HTMLDivElement, DocumentSidebarProps>(
               )
             )}
           </div>
-          <div className="sticky bottom-4 w-full left-0  justify-center flex gap-x-4 ">
+          <div className="sticky bottom-4 w-full left-0 justify-center flex gap-x-4">
             <button
-              className=" bg-background-solid text-xs p-2 rounded text-light"
+              className="bg-background-solid text-xs p-2 rounded text-light"
               onClick={() => closeSidebar()}
             >
               Save Changes
             </button>
             <button
-              className=" bg-background-dark text-xs p-2 rounded text-light"
+              className="bg-background-dark text-xs p-2 rounded text-light"
               onClick={() => {
                 clearSelectedDocuments();
 

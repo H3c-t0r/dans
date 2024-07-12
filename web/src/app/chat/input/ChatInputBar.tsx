@@ -223,7 +223,7 @@ export function ChatInputBar({
               ref={suggestionsRef}
               className="text-sm absolute inset-x-0 top-0 w-full transform -translate-y-full"
             >
-              <div className="rounded-lg py-1.5 bg-background border border-border-medium  shadow-lg mx-2 px-1.5 mt-2 rounded z-10">
+              <div className="rounded-lg py-1.5 bg-background border border-border-medium shadow-lg mx-2 px-1.5 mt-2 rounded z-10">
                 {filteredPersonas.map((currentPersona, index) => (
                   <button
                     key={index}
@@ -232,7 +232,7 @@ export function ChatInputBar({
                       updateCurrentPersona(currentPersona);
                     }}
                   >
-                    <p className="font-bold ">{currentPersona.name}</p>
+                    <p className="font-bold">{currentPersona.name}</p>
                     <p className="line-clamp-1">
                       {currentPersona.id == selectedAssistant.id &&
                         "(default) "}
@@ -275,13 +275,13 @@ export function ChatInputBar({
               <div className="flex flex-wrap gap-y-1 gap-x-2 px-2 pt-1.5 w-full">
                 <div
                   ref={interactionsRef}
-                  className="bg-background-subtle p-2 rounded-t-lg  items-center flex w-full"
+                  className="bg-background-subtle p-2 rounded-t-lg items-center flex w-full"
                 >
                   <AssistantIcon assistant={alternativeAssistant} border />
                   <p className="ml-3 text-strong my-auto">
                     {alternativeAssistant.name}
                   </p>
-                  <div className="flex gap-x-1 ml-auto ">
+                  <div className="flex gap-x-1 ml-auto">
                     <Tooltip
                       content={
                         <p className="max-w-xs flex flex-wrap">
@@ -302,8 +302,8 @@ export function ChatInputBar({
                 </div>
               </div>
             )}
-            <div className="flex  gap-x-2 px-2 pt-2">
-              <div className="flex  gap-x-1 px-2 overflow-y-auto overflow-x-scroll items-end weakbackground">
+            <div className="flex gap-x-2 px-2 pt-2">
+              <div className="flex gap-x-1 px-2 overflow-y-auto overflow-x-scroll items-end weakbackground">
                 {selectedDocuments.length > 0 && (
                   <button
                     onClick={showDocs}
@@ -396,7 +396,7 @@ export function ChatInputBar({
               suppressContentEditableWarning={true}
             />
 
-            <div className="flex items-center space-x-3 mr-12 px-4 pb-2  ">
+            <div className="flex items-center space-x-3 mr-12 px-4 pb-2 ">
               <Popup
                 removePadding
                 content={(close) => (
@@ -464,27 +464,6 @@ export function ChatInputBar({
                   input.click();
                 }}
               />
-
-              {/* <ChatInputOption
-                flexPriority="stiff"
-                name="File"
-                Icon={FiPlusCircle}
-                onClick={() => {
-                  const input = document.createElement("input");
-                  input.type = "file";
-                  input.multiple = true; // Allow multiple files
-                  input.onchange = (event: any) => {
-                    const files = Array.from(
-                      event?.target?.files || []
-                    ) as File[];
-                    if (files.length > 0) {
-                      handleFileUpload(files);
-                    }
-                  };
-                  input.click();
-                }}
-              />
-               */}
             </div>
             <div className="absolute bottom-2.5 right-10">
               <div

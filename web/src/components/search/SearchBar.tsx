@@ -71,7 +71,7 @@ export const AnimatedToggle = ({
       {/* that the proper symbol appears on Macbook vs Windows for the command symbol? */}
       <div
         ref={containerRef}
-        className=" my-auto ml-auto flex jusitfy-end items-center cursor-pointer transition-all duration-300 ease-in-out overflow-hidden"
+        className="my-auto ml-auto flex jusitfy-end items-center cursor-pointer transition-all duration-300 ease-in-out overflow-hidden"
         style={{ width }}
         onClick={handleToggle}
       >
@@ -187,7 +187,7 @@ export const FullSearchBar = ({
         suppressContentEditableWarning={true}
       />
 
-      <div className="flex justify-end w-full items-center space-x-3 mr-12 px-4  pb-2 ">
+      <div className="flex justify-end w-full items-center space-x-3 mr-12 px-4 pb-2">
         {searchState == "searching" && (
           <div key={"Reading"} className="mr-auto relative inline-block">
             <span className="loading-text">Reading Documents...</span>
@@ -209,7 +209,7 @@ export const FullSearchBar = ({
             onClick={() => {
               onSearch(agentic);
             }}
-            className=" flex  my-auto cursor-pointer"
+            className="flex my-auto cursor-pointer"
           >
             <SendIcon
               size={28}

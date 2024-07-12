@@ -54,13 +54,9 @@ export default function FunctionalHeader({
   }, []);
   return (
     <div className="pb-6 left-0 sticky top-0 z-10 w-full relative flex">
-      {/* // <div className="pb-6 left-0 sticky -top-[.1]  z-10 w-full from-neutral-200 via-neutral-200 to-neutral-200/10  flex  z-10 bg-gradient-to-b via-50% blur"> */}
-
       <div className="mt-2 mx-4 text-solid flex w-full">
         <div className="absolute z-[100] my-auto flex items-center text-xl font-bold">
           <FiSidebar size={20} />
-          {/* <Logo /> */}
-
           <div className="ml-2 text-solid text-xl">
             <HeaderTitle>Danswer</HeaderTitle>
           </div>
@@ -95,7 +91,7 @@ export default function FunctionalHeader({
             </div>
           )}
 
-          <div className="flex   my-auto">
+          <div className="flex my-auto">
             <UserDropdown user={user} />
           </div>
         </div>

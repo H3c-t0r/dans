@@ -101,7 +101,7 @@ export const HistorySidebar = forwardRef<HTMLDivElement, HistorySidebarProps>(
             h-screen
             transition-transform`}
         >
-          <div className="ml-4 mr-3 flex flex gap-x-1 items-center mt-2 my-auto text-solid text-xl ">
+          <div className="ml-4 mr-3 flex flex gap-x-1 items-center mt-2 my-auto text-solid text-xl">
             <div className="mr-1 mt-auto h-6 w-6">
               <Logo height={24} width={24} />
             </div>
@@ -155,7 +155,7 @@ export const HistorySidebar = forwardRef<HTMLDivElement, HistorySidebarProps>(
                 }
                 className="w-full p-2 bg-white border-border border rounded items-center hover:bg-background-subtle cursor-pointer transition-all duration-150 flex gap-x-2"
               >
-                <FiFolderPlus className=" my-auto" />
+                <FiFolderPlus className="my-auto" />
                 <p className="my-auto flex items-center text-sm">New Folder</p>
               </button>
 

@@ -197,7 +197,7 @@ export const DocumentDisplay = ({
             additional_relevance?.relevant) && (
             <FaStar
               size={16}
-              className="h-full text-xs text-accent  rounded w-fit my-auto select-none ml-auto mr-2"
+              className="h-full text-xs text-accent rounded w-fit my-auto select-none ml-auto mr-2"
             />
           )}
       </div>
@@ -216,7 +216,7 @@ export const DocumentDisplay = ({
               {document.semantic_identifier || document.document_id}
             </p>
           </a>
-          <div className="ml-auto flex gap-x-2 ">
+          <div className="ml-auto flex gap-x-2">
             {isHovered && messageId && (
               <DocumentFeedbackBlock
                 documentId={document.document_id}

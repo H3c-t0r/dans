@@ -42,7 +42,7 @@ export function ChatDocumentDisplay({
       key={document.semantic_identifier}
       className={`p-2 w-[350px] justify-start rounded-md ${isSelected ? "bg-background-subtle" : "bg-background-weaker"}   text-sm mx-3`}
     >
-      <div className=" flex relative justify-start  overflow-y-visible">
+      <div className="flex relative justify-start overflow-y-visible">
         <a
           className={
             "rounded-lg flex font-bold flex-shrink truncate" +
@@ -52,7 +52,7 @@ export function ChatDocumentDisplay({
           <a href={document.link} target="_blank" rel="noopener noreferrer">
             <SourceIcon sourceType={document.source_type} iconSize={18} />
           </a>
-          <p className="overflow-hidden text-left text-ellipsis mx-2 my-auto text-sm ">
+          <p className="overflow-hidden text-left text-ellipsis mx-2 my-auto text-sm">
             {document.semantic_identifier || document.document_id}
           </p>
         </a>
@@ -68,7 +68,7 @@ export function ChatDocumentDisplay({
           <DocumentMetadataBlock document={document} />
         </div>
       </div>
-      <p className=" line-clamp-3 pl-1 pt-2 pb-1 text-start break-words">
+      <p className="line-clamp-3 pl-1 pt-2 pb-1 text-start break-words">
         {buildDocumentSummaryDisplay(document.match_highlights, document.blurb)}
       </p>
       <div className="mb-2">

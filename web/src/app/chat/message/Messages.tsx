@@ -238,7 +238,7 @@ export const AIMessage = ({
     >
       <div className="mx-auto w-[90%] max-w-message-max">
         <div className="xl:ml-8">
-          <div className=" flex">
+          <div className="flex">
             <AssistantIcon
               size="small"
               assistant={alternativeAssistant || currentPersona}
@@ -370,23 +370,23 @@ export const AIMessage = ({
                 )}
 
                 {isComplete && docs && docs.length > 0 && (
-                  <div className="mt-2 -mx-8  w-full mb-4  flex relative ">
-                    <div className="absolute left-0 top-0 h-full bg-gradient-to-l from-background/0 via-background/40 backdrop-blur-xs  to-background w-[40px]" />
-                    <div className="absolute right-6 top-0  h-full bg-gradient-to-r from-background/0 via-background/40 backdrop-blur-xs  to-background w-[40px]" />
-                    <div className=" w-full  overflow-x-scroll no-scrollbar">
+                  <div className="mt-2 -mx-8 w-full mb-4 flex relative">
+                    <div className="absolute left-0 top-0 h-full bg-gradient-to-l from-background/0 via-background/40 backdrop-blur-xs to-background w-[40px]" />
+                    <div className="absolute right-6 top-0 h-full bg-gradient-to-r from-background/0 via-background/40 backdrop-blur-xs to-background w-[40px]" />
+                    <div className="w-full overflow-x-scroll no-scrollbar">
                       {/* <div className="absolute left-0 h-full w-20 bg-gradient-to-r from-background to-background/20 " /> */}
                       <div className="px-8 flex gap-x-2">
                         {filteredDocs.length > 0 &&
                           filteredDocs.slice(0, 2).map((doc) => (
                             <div
                               key={doc.document_id}
-                              className={`w-[200px] rounded-lg  flex-none transition-all duration-500 hover:bg-background-weaker bg-lighter px-4 py-2 border-b
+                              className={`w-[200px] rounded-lg flex-none transition-all duration-500 hover:bg-background-weaker bg-lighter px-4 py-2 border-b
                               `}
                             >
                               <a
                                 href={doc.link}
                                 target="_blank"
-                                className="text-sm  flex justify-between font-semibold text-solidDark"
+                                className="text-sm flex justify-between font-semibold text-solidDark"
                               >
                                 <p className="line-clamp-1">
                                   {
@@ -402,10 +402,10 @@ export const AIMessage = ({
                                   />
                                 </div>
                               </a>
-                              <div className="flex  overscroll-x-scroll mt-1">
+                              <div className="flex overscroll-x-scroll mt-1">
                                 <DocumentMetadataBlock document={doc} />
                               </div>
-                              <div className="line-clamp-3 text-xs break-words   pt-1">
+                              <div className="line-clamp-3 text-xs break-words pt-1">
                                 {doc.blurb}
                               </div>
                             </div>
@@ -417,13 +417,13 @@ export const AIMessage = ({
                             }
                           }}
                           key={-1}
-                          className="cursor-pointer w-[140px] rounded-lg  flex-none transition-all duration-500 hover:bg-background-weaker bg-lighter px-4 py-2 border-b"
+                          className="cursor-pointer w-[140px] rounded-lg flex-none transition-all duration-500 hover:bg-background-weaker bg-lighter px-4 py-2 border-b"
                         >
-                          <div className="text-sm  flex justify-between font-semibold text-solidDark">
+                          <div className="text-sm flex justify-between font-semibold text-solidDark">
                             <p className="line-clamp-1">See context</p>
                           </div>
 
-                          <div className="line-clamp-3 text-xs break-words   pt-1">
+                          <div className="line-clamp-3 text-xs break-words pt-1">
                             See {docs?.length} document
                             {!((docs?.length || 0) == 1) && "s"}
                           </div>
@@ -583,7 +583,7 @@ export const HumanMessage = ({
 
   return (
     <div
-      className=" pt-5 pb-1 px-2 lg:px-5 flex -mr-6  relative"
+      className="pt-5 pb-1 px-2 lg:px-5 flex -mr-6 relative"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -593,7 +593,7 @@ export const HumanMessage = ({
             <FileDisplay alignBubble files={files || []} />
 
             <div className="flex justify-end">
-              <div className="w-full  ml-8 flex  w-full max-w-message-max break-words">
+              <div className="w-full ml-8 flex w-full max-w-message-max break-words">
                 {isEditing ? (
                   <div className="w-full">
                     <div
@@ -762,7 +762,7 @@ export const HumanMessage = ({
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-x-0.5  mt-1">
+          <div className="flex flex-col md:flex-row gap-x-0.5 mt-1">
             {currentMessageInd !== undefined &&
               onMessageSelection &&
               otherMessagesCanSwitchTo &&
