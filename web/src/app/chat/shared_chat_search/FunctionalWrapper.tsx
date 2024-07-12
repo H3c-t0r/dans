@@ -49,7 +49,7 @@ const ToggleSwitch = () => {
         }`}
         onClick={() => handleTabChange("search")}
       >
-        <SearchIcon size={24} className="mr-2" />
+        <SearchIcon size={16} className="mr-2" />
         Search
         <span className="text-xs ml-2">{isMac ? "⌘" : "⊞"}S</span>
       </button>
@@ -61,7 +61,7 @@ const ToggleSwitch = () => {
         }`}
         onClick={() => handleTabChange("chat")}
       >
-        <ChatIcon size={24} className="mr-2" />
+        <ChatIcon size={16} className="mr-2" />
         Chat
         <span className="text-xs ml-2">{isMac ? "⌘" : "⊞"}D</span>
       </button>

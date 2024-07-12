@@ -42,8 +42,9 @@ import { SEARCH_TOGGLED_COOKIE_NAME } from "../resizable/contants";
 import { AGENTIC_SEARCH_TYPE_COOKIE_NAME } from "@/lib/constants";
 import Cookies from "js-cookie";
 import FixedLogo from "@/app/chat/shared_chat_search/FixedLogo";
+import { buildChatUrl } from "@/app/chat/lib";
 
-export type searchState = "input" | "searching" | "analyzing";
+export type searchState = "input" | "searching" | "analyzing" | "summarizing";
 
 const SEARCH_DEFAULT_OVERRIDES_START: SearchDefaultOverrides = {
   forceDisplayQA: false,
@@ -281,11 +282,23 @@ export const SearchSection = ({
       ...(prevState || initialSearchResponse),
       error,
     }));
-  const updateMessageId = (messageId: number) => {
+  const updateMessageAndThreadId = (
+    messageId: number,
+    chat_session_id: number
+  ) => {
     setSearchResponse((prevState) => ({
       ...(prevState || initialSearchResponse),
       messageId,
     }));
+    //
+    // confirm
+    // searchParams.delete()
+
+    // const newUrl = buildChatUrl(searchParams, messageId, null, true);
+
+    router.replace(`/search?searchId=${chat_session_id}`);
+
+    // router.pureplacesh(newUrl, { scroll: false });
   };
 
   const updateDocumentRelevance = (relevance: Relevance) => {
@@ -293,9 +306,29 @@ export const SearchSection = ({
       ...(prevState || initialSearchResponse),
       additional_relevance: relevance,
     }));
-    // setContentEnriched(true);
-    setIsFetching(false);
     setSearchState("input");
+
+    // setContentEnriched(true);
+    // setIsFetching(false);
+    // if (isNewSession) {
+    //   if (finalMessage) {
+    //     setSelectedMessageForDocDisplay(finalMessage.message_id);
+    //   }
+    //   if (!searchParamBasedChatSessionName) {
+    //     await nameChatSession(currChatSessionId, currMessage);
+    //   }
+
+    //   // NOTE: don't switch pages if the user has navigated away from the chat
+    //   if (
+    //     currChatSessionId === chatSessionIdRef.current ||
+    //     chatSessionIdRef.current === null
+    //   ) {
+    //     const newUrl = buildChatUrl(searchParams, currChatSessionId, null);
+    // newUrl is like /chat?chatId=10
+    // current page is like /chat
+    //   }
+    // }
+    // setSearchState("input");
   };
 
   const updateComments = (comments: any) => {
@@ -323,6 +356,10 @@ export const SearchSection = ({
     offset,
     overrideMessage,
   }: SearchRequestOverrides = {}) => {
+    if ((overrideMessage || query) == "") {
+      return;
+    }
+
     setAgenticResults(agentic!);
     resetInput();
 
@@ -372,13 +409,13 @@ export const SearchSection = ({
         cancellationToken: lastSearchCancellationToken.current,
         fn: updateError,
       }),
-      updateMessageId: cancellable({
+      updateMessageAndThreadId: cancellable({
         cancellationToken: lastSearchCancellationToken.current,
-        fn: updateMessageId,
+        fn: updateMessageAndThreadId,
       }),
       updateDocStatus: cancellable({
         cancellationToken: lastSearchCancellationToken.current,
-        fn: updateMessageId,
+        fn: updateMessageAndThreadId,
       }),
       updateDocumentRelevance: cancellable({
         cancellationToken: lastSearchCancellationToken.current,

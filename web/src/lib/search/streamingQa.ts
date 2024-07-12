@@ -30,7 +30,7 @@ export const searchRequestStreamed = async ({
   updateSuggestedFlowType,
   updateSelectedDocIndices,
   updateError,
-  updateMessageId,
+  updateMessageAndThreadId,
   finishedSearching,
   updateDocumentRelevance,
   updateComments,
@@ -67,6 +67,7 @@ export const searchRequestStreamed = async ({
         "Content-Type": "application/json",
       },
     });
+
     const reader = response.body?.getReader();
     const decoder = new TextDecoder("utf-8");
 
@@ -171,12 +172,12 @@ export const searchRequestStreamed = async ({
 
         // Check for the final chunk
         if (Object.hasOwn(chunk, "message_id")) {
-          console.log("I am updating message ID");
           const backendChunk = chunk as BackendMessage;
-
           updateComments(backendChunk.comments);
-          updateMessageId(backendChunk.message_id);
-          finishedSearching();
+          updateMessageAndThreadId(
+            backendChunk.message_id,
+            backendChunk.chat_session_id
+          );
         }
       });
     }

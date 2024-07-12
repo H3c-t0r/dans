@@ -186,6 +186,7 @@ class ChatMessageDetail(BaseModel):
     time_sent: datetime
     alternate_assistant_id: str | None
     # Dict mapping citation number to db_doc_id
+    chat_session_id: int | None = None
     citations: dict[int, int] | None
     files: list[FileDescriptor]
     tool_calls: list[ToolCallFinalResult]

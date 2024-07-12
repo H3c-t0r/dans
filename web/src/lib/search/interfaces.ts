@@ -133,7 +133,10 @@ export interface SearchRequestArgs {
   updateSuggestedSearchType: (searchType: SearchType) => void;
   updateSuggestedFlowType: (flowType: FlowType) => void;
   updateError: (error: string) => void;
-  updateMessageId: (messageId: number) => void;
+  updateMessageAndThreadId: (
+    messageId: number,
+    chat_session_id: number
+  ) => void;
   finishedSearching: () => void;
   updateComments: (comments: any) => void;
   selectedSearchType: SearchType | null;
